@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- TODO: fill title/description/links after the review period; keep anonymous while under double-blind review. -->
+  <title>Curating Educational Image–Text Pairs with Browser Agents</title>
+  <meta name="description" content="A browser agent that watches educational YouTube videos like a person — skimming, jumping and looking back — to collect visual teaching image–text pairs.">
+  <meta name="theme-color" content="#070a12">
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+  <link rel="stylesheet" href="static/css/showcase.css">
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+  <script defer src="static/js/showcase.js"></script>
+</head>
+<body>
+
+<div class="cursor-glow" id="cursor-glow"></div>
+
+<nav class="topnav" id="topnav">
+  <a href="#top" class="topnav-brand"><span class="brand-dot"></span>EduPair Agent</a>
+  <div class="topnav-links">
+    <a href="#overview">Overview</a>
+    <a href="#method">Method</a>
+    <a href="#viewer">Explorer</a>
+    <a href="#labeler">Labeler</a>
+    <a href="#results">Results</a>
+    <a href="#gallery">Gallery</a>
+  </div>
+</nav>
+
+<button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+  <i class="fas fa-chevron-up"></i>
+</button>
+
+<main id="main-content">
+
+<!-- Hero: a scrolling wall of real collected pairs behind the title -->
+<section class="hero-stage" id="top">
+  <div class="pair-wall" id="pair-wall" aria-hidden="true"></div>
+  <div class="hero-veil"></div>
+  <div class="hero-content">
+    <p class="venue-tag" data-aos="fade-down"><span class="pulse"></span>CVPR 2027 · under review</p>
+    <h1 class="hero-title" data-aos="zoom-out" data-aos-duration="1000">
+      Curating Educational<br>Image–Text Pairs with<br><span class="gradient-text">Browser Agents</span>
+    </h1>
+    <p class="hero-sub" data-aos="fade-up" data-aos-delay="200">
+      An agent that watches lectures the way people do — it <span class="c-jump">skims</span>,
+      <span class="c-back">looks back</span>, and <span class="c-agent">captures</span> the moments that teach.
+    </p>
+    <div class="hero-authors" data-aos="fade-up" data-aos-delay="300">Anonymous Authors</div>
+    <div class="publication-links" data-aos="fade-up" data-aos-delay="400">
+      <a href="#" class="btn-glow"><i class="fas fa-file-pdf"></i>Paper</a>
+      <a href="#" class="btn-glass"><i class="fab fa-github"></i>Code</a>
+      <a href="#benchmark" class="btn-glass"><i class="fas fa-database"></i>Benchmark</a>
+      <a href="#viewer" class="btn-glass"><i class="fas fa-play"></i>Explorer</a>
+    </div>
+  </div>
+  <a href="#overview" class="scroll-cue" aria-label="Scroll down"><span></span></a>
+</section>
+
+<!-- Teaser -->
+<section class="sec" id="overview">
+  <div class="container is-max-desktop">
+    <div class="teaser-wrap" data-aos="fade-up" data-aos-duration="900">
+      <div class="teaser-frame">
+        <div class="browser-bar"><i></i><i></i><i></i><span id="teaser-url">youtube.com/watch</span><em class="live"><b></b>agent running</em></div>
+        <video id="teaser-video" autoplay muted loop playsinline preload="auto"></video>
+      </div>
+    </div>
+    <div class="teaser-tabs" id="teaser-tabs" data-aos="fade-up"></div>
+    <p class="teaser-caption" data-aos="fade-up">
+      The agent operates a real YouTube player. It <b class="c-jump">jumps ahead</b>, <b class="c-back">looks back</b>,
+      and <b class="c-agent">captures</b> segments whose frame and narration teach something.
+      <span class="c-human">Green</span>: human-selected targets · <span class="c-agent">Orange</span>: pairs saved by Qwen3.5-27B.
+    </p>
+    <div class="stat-grid" id="stat-grid"></div>
+  </div>
+</section>
+
+<!-- Abstract -->
+<section class="sec">
+  <div class="container is-max-desktop">
+    <div class="eyebrow" data-aos="fade-up">Abstract</div>
+    <div class="glass-card abstract" data-aos="fade-up">
+      <p>
+        Educational videos contain scientific images, diagrams, artworks, and other visual evidence accompanied by
+        spoken explanations. Turning this material into useful image–text pairs requires more than sampling frames:
+        a system must identify informative visual content, locate its explanatory context, and avoid redundant or
+        mismatched outputs. We study this problem through a browser-based collection framework that combines video
+        navigation, visual inspection, segment localization, rendered-caption collection, and image–text
+        verification. We also develop a human annotation interface and an evaluation protocol that separates
+        agreement with human-selected moments from the semantic quality of the resulting pairs. The benchmark
+        contains <b>502 videos</b> (82 hours) spanning <b>11 subjects</b>. Experiments compare multiple
+        vision–language backbones using a fixed video list and agent protocol, with measurements of pair discovery,
+        temporal localization, interaction behavior, and model-call cost.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Method -->
+<section class="sec" id="method">
+  <div class="container">
+    <div class="eyebrow" data-aos="fade-up">Method</div>
+    <h2 class="sec-title" data-aos="fade-up">How the agent watches</h2>
+    <p class="sec-lead" data-aos="fade-up">One loop, four decisions. Every step runs on the live browser — no pre-extracted frames, no transcript dumps.</p>
+    <div class="pipeline">
+      <div class="pipe-flow" aria-hidden="true"><span></span></div>
+      <div class="pipe-step" data-aos="fade-up" data-aos-delay="0"><div class="pipe-num">01</div><div class="pipe-icon"><i class="fas fa-desktop"></i></div><h4>Observe</h4><p>Player screenshot, playhead and rendered captions.</p></div>
+      <div class="pipe-step" data-aos="fade-up" data-aos-delay="150"><div class="pipe-num">02</div><div class="pipe-icon"><i class="fas fa-route"></i></div><h4>Navigate</h4><p>Planner + rule engine: skim, jump, look back, or start a segment.</p></div>
+      <div class="pipe-step" data-aos="fade-up" data-aos-delay="300"><div class="pipe-num">03</div><div class="pipe-icon"><i class="fas fa-crop-alt"></i></div><h4>Localize</h4><p>Close the segment at a visual change; pick the most informative frame.</p></div>
+      <div class="pipe-step" data-aos="fade-up" data-aos-delay="450"><div class="pipe-num">04</div><div class="pipe-icon"><i class="fas fa-check-double"></i></div><h4>Verify</h4><p>Keep the pair only if the frame and the narration teach the same thing.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Interactive viewer -->
+<section class="sec" id="viewer">
+  <div class="container">
+    <div class="eyebrow" data-aos="fade-up">Trajectory explorer</div>
+    <h2 class="sec-title" data-aos="fade-up">Five backbones, one lecture</h2>
+    <p class="sec-lead" data-aos="fade-up">Pick a video and watch every backbone navigate it. Each lane replays the agent's real playhead;
+      hover a dot to see the pair it saved.</p>
+    <div class="video-chips" id="video-chips" data-aos="fade-up"></div>
+    <div class="viewer-card glass-card" data-aos="fade-up">
+      <div class="viewer-head">
+        <div>
+          <div class="viewer-title" id="viewer-title"></div>
+          <div class="viewer-meta" id="viewer-meta"></div>
+        </div>
+        <button class="btn-glow is-small" id="viewer-play"><i class="fas fa-play"></i>Replay</button>
+      </div>
+      <div class="lanes" id="lanes"></div>
+      <div class="legend">
+        <span><i class="sw sw-human"></i>human target (brighter = found by more models)</span>
+        <span><i class="sw sw-agent"></i>agent segment</span>
+        <span><i class="sw sw-hit"></i>pair frame inside a target</span>
+        <span><i class="sw sw-miss"></i>pair frame outside</span>
+      </div>
+    </div>
+    <div class="pair-strip" id="pair-strip"></div>
+    <div class="tooltip-card" id="tooltip"></div>
+  </div>
+</section>
+
+<!-- Labeler -->
+<section class="sec labeler-section" id="labeler">
+  <div class="container">
+    <div class="eyebrow" data-aos="fade-up">Human annotation</div>
+    <h2 class="sec-title" data-aos="fade-up">A labeler that records <span class="gradient-text">how</span> people watch</h2>
+    <p class="sec-lead" data-aos="fade-up">Annotators use the same player actions as the agent. Every skim, look-back and
+      inspection is logged, so the benchmark captures both <b>what</b> people select and <b>how</b> they found it.</p>
+    <div class="labeler-layout">
+      <div class="browser-mock" data-aos="fade-right" data-aos-duration="900">
+        <div class="browser-bar"><i></i><i></i><i></i><span>YouTube Pair Labeler</span></div>
+        <video autoplay muted loop playsinline poster="assets/labeler/labeler_full.jpg" src="assets/labeler/labeler_demo.mp4"></video>
+      </div>
+      <div class="labeler-features">
+        <div class="feature" data-aos="fade-left" data-aos-delay="0"><div class="feature-icon"><i class="fas fa-forward"></i></div>
+          <div><h4>Skim &amp; inspect</h4><p>Jump ahead in fixed steps, then record whether the new visual is worth a closer look.</p></div></div>
+        <div class="feature" data-aos="fade-left" data-aos-delay="120"><div class="feature-icon"><i class="fas fa-arrows-alt-h"></i></div>
+          <div><h4>Interval pairs</h4><p>Mark start and end, choose a representative frame, and judge whether the narration matches it.</p></div></div>
+        <div class="feature" data-aos="fade-left" data-aos-delay="240"><div class="feature-icon"><i class="fas fa-history"></i></div>
+          <div><h4>Full trajectory log</h4><p>Play, pause, seeks and decisions are timestamped and editable, giving a human reference for agent behavior.</p></div></div>
+        <div class="feature" data-aos="fade-left" data-aos-delay="360"><div class="feature-icon"><i class="fas fa-users"></i></div>
+          <div><h4>Shared, conflict-free</h4><p>Several annotators work on one label file; each video is saved independently.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Benchmark -->
+<section class="sec" id="benchmark">
+  <div class="container is-max-desktop">
+    <div class="eyebrow" data-aos="fade-up">Benchmark</div>
+    <h2 class="sec-title" data-aos="fade-up">502 lectures, 11 subjects</h2>
+    <p class="sec-lead" data-aos="fade-up">Human annotators watched every video with the same player controls and marked the
+      segments worth turning into a teaching pair.</p>
+    <div class="glass-card" data-aos="fade-up"><div class="subject-bars" id="subject-bars"></div></div>
+    <figure class="paper-figure" data-aos="zoom-in">
+      <img src="static/images/fig_dataset_stats.png" alt="Dataset statistics" loading="lazy">
+      <figcaption>Video length, targets per video and target length.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- Results -->
+<section class="sec" id="results">
+  <div class="container is-max-desktop">
+    <div class="eyebrow" data-aos="fade-up">Results</div>
+    <h2 class="sec-title" data-aos="fade-up">How many teaching moments does each backbone find?</h2>
+    <p class="sec-lead" id="results-lead" data-aos="fade-up"></p>
+    <div class="glass-card" data-aos="fade-up"><div class="result-bars" id="result-bars"></div></div>
+    <div class="union-card" id="union-card" data-aos="fade-up"></div>
+    <div class="columns is-variable is-5 result-figs">
+      <div class="column" data-aos="fade-up">
+        <figure class="paper-figure">
+          <img src="static/images/fig_complementarity.png" alt="Complementarity across backbones" loading="lazy">
+          <figcaption id="complementarity-caption"></figcaption>
+        </figure>
+      </div>
+      <div class="column" data-aos="fade-up" data-aos-delay="150">
+        <figure class="paper-figure">
+          <img src="static/images/fig_subject_heatmap.png" alt="Recall by subject" loading="lazy">
+          <figcaption>Target recall by subject and backbone.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Gallery -->
+<section class="sec" id="gallery">
+  <div class="container">
+    <div class="eyebrow" data-aos="fade-up">Gallery</div>
+    <h2 class="sec-title" data-aos="fade-up">Collected pairs</h2>
+    <p class="sec-lead" data-aos="fade-up">Image–text pairs saved by the agents inside human targets, each with the verifier's rationale. Click a card to open it.</p>
+    <div class="video-chips" id="gallery-filter" data-aos="fade-up"></div>
+    <div class="gallery" id="gallery-grid"></div>
+  </div>
+</section>
+
+<!-- BibTeX -->
+<section class="sec" id="BibTeX">
+  <div class="container is-max-desktop">
+    <div class="bibtex-header">
+      <div class="eyebrow">BibTeX</div>
+      <button class="copy-bibtex-btn" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
+        <i class="fas fa-copy"></i><span class="copy-text">Copy</span>
+      </button>
+    </div>
+    <pre id="bibtex-code"><code>@inproceedings{anonymous2027curating,
+  title     = {Curating Educational Image--Text Pairs with Browser Agents},
+  author    = {Anonymous},
+  booktitle = {Under review},
+  year      = {2027}
+}</code></pre>
+  </div>
+</section>
+
+</main>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></button>
+  <div class="lightbox-body" id="lightbox-body"></div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <p>
+        Video frames and captions are shown for research illustration and link to their original YouTube sources.<br>
+        This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>,
+        adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page, and is licensed under a
+        <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
