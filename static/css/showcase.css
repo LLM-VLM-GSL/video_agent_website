@@ -70,13 +70,6 @@ main, footer { position: relative; z-index: 1; }
     linear-gradient(180deg, rgba(7, 10, 18, 0.6) 0%, transparent 25%, transparent 70%, var(--bg) 100%);
 }
 .hero-content { text-align: center; padding: 6rem 1.25rem 5rem; max-width: 1000px; }
-.venue-tag {
-  display: inline-flex; align-items: center; gap: 0.55rem; margin-bottom: 1.6rem; padding: 0.4rem 1rem; border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); color: #cbd5e1; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.06em;
-  backdrop-filter: blur(6px);
-}
-.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--human); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); animation: pulse 2s infinite; }
-@keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); } }
 .hero-title { font-size: clamp(2.3rem, 6.2vw, 4.6rem); font-weight: 900; line-height: 1.04; letter-spacing: -0.035em; color: #fff; }
 .gradient-text {
   background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6, #fb923c, #38bdf8); background-size: 300% 100%;
