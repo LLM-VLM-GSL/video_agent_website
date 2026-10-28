@@ -229,10 +229,9 @@
     });
   }
 
-  // Masonry of in-target pairs (one per backbone per video), filterable by subject, with tilt and a lightbox.
+  // Gallery of a few in-target example pairs, with tilt and a lightbox.
   function gallery(data) {
     const grid = document.getElementById('gallery-grid');
-    const filter = document.getElementById('gallery-filter');
     const box = document.getElementById('lightbox');
     const body = document.getElementById('lightbox-body');
     const subject = (v) => v.category.split(' / ')[0].split(',')[0];
@@ -250,31 +249,28 @@
     box.addEventListener('click', (e) => { if (e.target === box) close(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
+    // A few hand-picked examples: one per subject, rotating backbones, English narration only.
     const cards = [];
-    data.videos.forEach((v) => Object.values(v.models).forEach((m, k) => {
-      const p = m.pairs.find((q) => q.hit && q.verifier);
-      if (!p) return;
-      const card = pairCard(p, `<div class="verifier">“${escape(p.verifier)}”</div>`, m.name);
-      card.dataset.subject = subject(v);
-      card.dataset.model = k;
-      card.onclick = () => open(p, v, m.name);
-      cards.push(card);
-    }));
-    // Order by backbone first so neighbouring cards show different lectures.
-    cards.map((c, i) => [c, c.dataset.model, i]).sort((x, y) => x[1] - y[1] || x[2] - y[2]).forEach(([c]) => grid.appendChild(c));
+    const seen = new Set();
+    const english = (t) => /^[\x00-\x7F\u2018-\u201d]*$/.test(t);
+    data.videos.forEach((v) => {
+      if (cards.length >= 6 || seen.has(subject(v))) return;
+      const models = Object.values(v.models);
+      for (let i = 0; i < models.length; i++) {
+        const m = models[(cards.length + i) % models.length];
+        const p = m.pairs.find((q) => q.hit && q.verifier && english(q.text));
+        if (!p) continue;
+        const card = pairCard(p, `<div class="verifier">“${escape(p.verifier)}”</div>`, m.name);
+        card.onclick = () => open(p, v, m.name);
+        cards.push(card);
+        seen.add(subject(v));
+        break;
+      }
+    });
+    cards.forEach((c) => grid.appendChild(c));
     if (window.VanillaTilt && matchMedia('(hover: hover)').matches) {
       VanillaTilt.init(cards, { max: 8, speed: 400, glare: true, 'max-glare': 0.15, scale: 1.02 });
     }
-
-    const subjects = ['All', ...new Set(cards.map((c) => c.dataset.subject))];
-    subjects.forEach((name, i) => {
-      const chip = el('button', { class: `chip${i ? '' : ' is-active'}` }, escape(name));
-      chip.onclick = () => {
-        filter.querySelectorAll('.chip').forEach((b) => b.classList.toggle('is-active', b === chip));
-        cards.forEach((c) => c.classList.toggle('is-hidden', name !== 'All' && c.dataset.subject !== name));
-      };
-      filter.appendChild(chip);
-    });
   }
 
   // Hero background: rows of real collected pairs drifting in opposite directions.
