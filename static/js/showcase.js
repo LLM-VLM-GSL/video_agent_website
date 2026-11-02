@@ -55,8 +55,8 @@
     const d = data.dataset;
     const best = data.results.reduce((a, b) => (b.target_recall > a.target_recall ? b : a));
     const items = [
-      [d.videos, 0, 'videos'], [d.hours, 1, 'hours of lectures'], [d.targets, 0, 'human targets'],
-      [Object.keys(data.categories).length, 0, 'subjects'], [100 * best.target_recall, 1, `% targets found (${best.name})`],
+      [d.videos, 0, 'videos'], [d.hours, 1, 'hours of video'], [d.targets, 0, 'reference moments'],
+      [Object.keys(data.categories).length, 0, 'subjects'], [100 * best.target_recall, 1, `% moments found (${best.name})`],
     ];
     const grid = document.getElementById('stat-grid');
     items.forEach(([value, decimals, label]) => {
@@ -89,14 +89,14 @@
     bars(document.getElementById('result-bars'), results, 1);
     document.querySelector('#result-bars .hbar').classList.add('is-best');
     document.getElementById('results-lead').textContent =
-      `Share of human targets whose segment the agent recovered, on ${data.cohort_videos} videos / ` +
-      `${data.cohort_targets.toLocaleString()} targets shared by all backbones (bars: 95% bootstrap CI).`;
+      `Share of the moments people kept in which the agent kept a frame, on ${data.cohort_videos} videos / ` +
+      `${data.cohort_targets.toLocaleString()} reference moments shared by all backbones (bars: 95% bootstrap CI).`;
     const c = data.complementarity;
     document.getElementById('complementarity-caption').textContent =
-      `Backbones are complementary: ${pct(c.any_model_recall)} of targets are found by at least one model, ` +
+      `Backbones are complementary: ${pct(c.any_model_recall)} of reference moments are found by at least one model, ` +
       `but only ${pct(c.all_model_recall)} by all five.`;
     const union = document.getElementById('union-card');
-    union.innerHTML = `<div class="union-big">0%</div><div class="union-text">of human targets are found by <b>at least one</b>
+    union.innerHTML = `<div class="union-big">0%</div><div class="union-text">of the moments people kept are found by <b>at least one</b>
       of the five backbones, against ${pct(results[0].x)} for the best single model and only ${pct(c.all_model_recall)} found by all of them.
       Different models miss different moments — the gap is in <b>discovery</b>, not localization.</div>`;
     const big = union.querySelector('.union-big');
@@ -109,7 +109,7 @@
   function pairCard(pair, extra, model) {
     const card = el('div', { class: 'pair-card' });
     card.innerHTML = `<img src="${pair.img}" alt="" loading="lazy"><div class="pair-body">
-      ${model ? `<span class="pair-tag model">${escape(model)}</span>` : ''}<span class="pair-tag ${pair.hit ? 'hit' : 'miss'}">${pair.hit ? 'in target' : 'outside'}</span>
+      ${model ? `<span class="pair-tag model">${escape(model)}</span>` : ''}<span class="pair-tag ${pair.hit ? 'hit' : 'miss'}">${pair.hit ? 'matches a person' : 'outside'}</span>
       <span class="pair-time">${fmt(pair.s)}–${fmt(pair.e)}</span>
       <div class="pair-text">${escape(pair.text)}…</div>${extra || ''}</div>`;
     return card;
@@ -237,7 +237,7 @@
     const subject = (v) => v.category.split(' / ')[0].split(',')[0];
     const open = (p, v, model) => {
       body.innerHTML = `<img src="${p.img}" alt=""><div class="lb-text">
-        <span class="pair-tag model">${escape(model)}</span><span class="pair-tag hit">in target</span>
+        <span class="pair-tag model">${escape(model)}</span><span class="pair-tag hit">matches a person</span>
         <span class="pair-time">${fmt(p.s)}–${fmt(p.e)}</span>
         <h4><a href="${v.url}&t=${Math.floor(p.s)}s" target="_blank">${escape(v.title.replace(/ - YouTube$/, ''))}</a></h4>
         <div>${escape(p.text)}…</div>
