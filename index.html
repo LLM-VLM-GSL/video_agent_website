@@ -19,7 +19,7 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script defer src="static/js/index.js?v=4"></script>
-  <script defer src="static/js/showcase.js?v=4"></script>
+  <script defer src="static/js/showcase.js?v=5"></script>
 </head>
 <body>
 
@@ -99,8 +99,8 @@
         shows and the subtitles that explain it. Our agent goes from a topic to such moments: it searches, chooses
         videos, and on each video pauses, rewinds, and keeps, with one vision–language model making every judgment
         about content. We build a benchmark of <b>502 videos</b> from <b>11 subjects</b> in which annotators kept the
-        moments they found worth keeping, and compare five open backbones against these references. The best agent
-        keeps a frame inside 77% of the moments people kept, the weakest 57%; agents had seen almost all the moments
+        moments they found worth keeping, and compare eight open backbones against these references. The best agent
+        keeps a frame inside 77% of the moments people kept, the weakest 42%; agents had seen almost all the moments
         they missed and lost them afterwards, in judging, verifying, or picking the frame.
       </p>
     </div>
@@ -127,7 +127,7 @@
 <section class="sec" id="viewer">
   <div class="container">
     <div class="eyebrow" data-aos="fade-up">Trajectory explorer</div>
-    <h2 class="sec-title" data-aos="fade-up">Five backbones, one video</h2>
+    <h2 class="sec-title" data-aos="fade-up">Eight backbones, one video</h2>
     <p class="sec-lead" data-aos="fade-up">Pick a video and watch every backbone navigate it. Each lane replays the agent's real playhead;
       hover a dot to see the moment it kept.</p>
     <div class="video-chips" id="video-chips" data-aos="fade-up"></div>
@@ -204,13 +204,13 @@
     <div class="columns is-variable is-5 result-figs">
       <div class="column" data-aos="fade-up">
         <figure class="paper-figure">
-          <img src="static/images/fig_complementarity.png" alt="Complementarity across backbones" loading="lazy">
+          <img src="static/images/fig_complementarity.png?v=5" alt="Complementarity across backbones" loading="lazy">
           <figcaption id="complementarity-caption"></figcaption>
         </figure>
       </div>
       <div class="column" data-aos="fade-up" data-aos-delay="150">
         <figure class="paper-figure">
-          <img src="static/images/fig_subject_heatmap.png" alt="Recall by subject" loading="lazy">
+          <img src="static/images/fig_subject_heatmap.png?v=5" alt="Recall by subject" loading="lazy">
           <figcaption>Moment recall by subject and backbone.</figcaption>
         </figure>
       </div>

@@ -94,10 +94,10 @@
     const c = data.complementarity;
     document.getElementById('complementarity-caption').textContent =
       `Backbones are complementary: ${pct(c.any_model_recall)} of reference moments are found by at least one model, ` +
-      `but only ${pct(c.all_model_recall)} by all five.`;
+      `but only ${pct(c.all_model_recall)} by all ${data.results.length}.`;
     const union = document.getElementById('union-card');
     union.innerHTML = `<div class="union-big">0%</div><div class="union-text">of the moments people kept are found by <b>at least one</b>
-      of the five backbones, against ${pct(results[0].x)} for the best single model and only ${pct(c.all_model_recall)} found by all of them.
+      of the ${data.results.length} backbones, against ${pct(results[0].x)} for the best single model and only ${pct(c.all_model_recall)} found by all of them.
       Different models miss different moments — the gap is in <b>discovery</b>, not localization.</div>`;
     const big = union.querySelector('.union-big');
     onVisible(union, () => {
@@ -311,7 +311,7 @@
     window.addEventListener('mousemove', (e) => { glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`; }, { passive: true });
   }
 
-  fetch('data/showcase.json').then((r) => r.json()).then((data) => {
+  fetch('data/showcase.json?v=5').then((r) => r.json()).then((data) => {
     wall(data); teaser(data); stats(data); benchmark(data); viewer(data); gallery(data);
     if (window.AOS) AOS.refresh();
   });
