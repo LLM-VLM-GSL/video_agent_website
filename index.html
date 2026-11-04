@@ -15,11 +15,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <!-- Start the data download with the page instead of after the scripts run. -->
+  <link rel="preload" href="data/showcase.json?v=13" as="fetch" crossorigin>
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
   <link rel="stylesheet" href="static/css/showcase.css?v=24">
-  <script defer src="static/js/fontawesome.all.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script defer src="static/js/index.js?v=4"></script>
@@ -27,6 +28,8 @@
   <script defer src="static/js/charts.js?v=7"></script>
   <script defer src="static/js/showcase.js?v=18"></script>
   <script defer src="static/js/snap.js?v=2"></script>
+  <!-- Icons last: the 1.2 MB icon script would otherwise hold back the page scripts that load the data. -->
+  <script defer src="static/js/fontawesome.all.min.js"></script>
 </head>
 <body>
 
