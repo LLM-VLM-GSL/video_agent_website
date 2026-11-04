@@ -14,14 +14,14 @@
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
-  <link rel="stylesheet" href="static/css/showcase.css?v=20">
+  <link rel="stylesheet" href="static/css/showcase.css?v=22">
   <script defer src="static/js/fontawesome.all.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script defer src="static/js/index.js?v=4"></script>
   <script defer src="static/js/story.js?v=4"></script>
-  <script defer src="static/js/charts.js?v=6"></script>
-  <script defer src="static/js/showcase.js?v=14"></script>
+  <script defer src="static/js/charts.js?v=7"></script>
+  <script defer src="static/js/showcase.js?v=16"></script>
   <script defer src="static/js/snap.js?v=2"></script>
 </head>
 <body>
@@ -33,7 +33,8 @@
   <div class="topnav-links">
     <a href="#overview">Overview</a>
     <a href="#method">Method</a>
-    <a href="#viewer">Explorer</a>
+    <a href="#trajectory">Trajectory</a>
+    <a href="#viewer">Baselines</a>
     <a href="#labeler">Labeler</a>
     <a href="#benchmark">Benchmark</a>
     <a href="#results">Results</a>
@@ -75,7 +76,7 @@
       <a href="#" class="btn-glow"><i class="fas fa-file-pdf"></i>Paper</a>
       <a href="#" class="btn-glass"><i class="fab fa-github"></i>Code</a>
       <a href="#benchmark" class="btn-glass"><i class="fas fa-database"></i>Benchmark</a>
-      <a href="#viewer" class="btn-glass"><i class="fas fa-play"></i>Explorer</a>
+      <a href="#trajectory" class="btn-glass"><i class="fas fa-play"></i>Explorer</a>
     </div>
   </div>
   <a href="#overview" class="scroll-cue" aria-label="Scroll down"><span></span></a>
@@ -216,28 +217,40 @@
 </section>
 
 <!-- Interactive viewer -->
+<section class="sec" id="trajectory">
+  <div class="container">
+    <div class="eyebrow" data-aos="fade-up">Trajectory</div>
+    <h2 class="sec-title" data-aos="fade-up">Watch how it watches</h2>
+    <p class="sec-lead" data-aos="fade-up">Each bar is the whole video and the dot is where the viewer is.
+      Arcs above are jumps forward, arcs below are look-backs, and the blocks that light up are the moments each one kept.</p>
+    <div class="video-chips" id="trace-chips" data-aos="fade-up"></div>
+    <div class="trace-card glass-card" data-aos="fade-up">
+      <div class="viewer-head">
+        <div>
+          <div class="viewer-title" id="trace-title"></div>
+          <div class="viewer-meta" id="trace-meta"></div>
+        </div>
+        <button class="btn-glow is-small" id="trace-play"><i class="fas fa-play"></i>Replay</button>
+      </div>
+      <div class="trace" id="trace"></div>
+      <div class="legend">
+        <span><i class="sw sw-jump"></i>jump forward</span>
+        <span><i class="sw sw-back"></i>look back</span>
+        <span><i class="sw sw-seen"></i>played</span>
+        <span><i class="sw sw-human"></i>moment a person kept</span>
+        <span><i class="sw sw-agent"></i>moment the agent kept</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="sec" id="viewer">
   <div class="container">
-    <div class="eyebrow" data-aos="fade-up">Trajectory explorer</div>
+    <div class="eyebrow" data-aos="fade-up">Baselines</div>
     <h2 class="sec-title" data-aos="fade-up">Eight backbones, one video</h2>
-    <p class="sec-lead" data-aos="fade-up">Pick a video and follow how a person and each backbone actually moved through it,
-      then compare where every backbone kept its moments.</p>
+    <p class="sec-lead" data-aos="fade-up">Every backbone ran on the same video. Each row shows the segments it recorded and the frames it kept;
+      hover a frame to read it. On the right: how many of the moments people kept that backbone also found.</p>
     <div class="video-chips" id="video-chips" data-aos="fade-up"></div>
-    <div class="path-card" data-aos="fade-up">
-      <div class="path-head">
-        <div>
-          <div class="path-title">How people and agents move through a video</div>
-          <div class="path-sub">Position in the video over the course of each session: steps up are jumps forward, drops are look-backs.
-            Pick a backbone below to compare.</div>
-        </div>
-        <div class="path-legend">
-          <span><i class="pl-human"></i>People</span><span><i class="pl-agent"></i><b id="path-model">Agent</b></span>
-          <span><i class="pl-back"></i>look-back</span><span><i class="pl-band"></i>moment people kept</span>
-        </div>
-      </div>
-      <div class="path-plot" id="path-plot"></div>
-      <div class="path-stats" id="path-stats"></div>
-    </div>
     <div class="viewer-card glass-card" data-aos="fade-up">
       <div class="viewer-head">
         <div>

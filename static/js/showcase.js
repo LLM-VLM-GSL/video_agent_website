@@ -19,6 +19,16 @@
     .replace(/^./, (c) => c.toUpperCase());
   const escape = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  // Model families, ordered by their best member; members by moment recall. Shared with charts.js.
+  const FAMILIES = [['qwen', 'Qwen3.5'], ['internvl', 'InternVL3.5'], ['gemma', 'Gemma 4'], ['minicpm', 'MiniCPM-V'], ['glm', 'GLM'], ['kimi', 'Kimi-VL']];
+  const family = (id) => FAMILIES.find(([key]) => id.startsWith(key)) || [id, id];
+  const byFamily = (results) => {
+    const best = (key) => Math.max(...results.filter((r) => family(r.id)[0] === key).map((r) => r.target_recall));
+    return [...results].sort((a, b) => (best(family(b.id)[0]) - best(family(a.id)[0])) || (b.target_recall - a.target_recall));
+  };
+  window.PRK = window.PRK || {};
+  Object.assign(window.PRK, { family, byFamily });
+
   function onVisible(node, fn) {
     const io = new IntersectionObserver((entries) => entries.forEach((e) => {
       if (e.isIntersecting) { fn(e.target); io.unobserve(e.target); }
@@ -120,6 +130,7 @@
 
   function bars(container, rows, max, cls) {
     rows.forEach((r) => {
+      if (r.family) container.appendChild(el('div', { class: 'hbar-family' }, `<span>${escape(r.family)}</span>`));
       const row = el('div', { class: `hbar ${cls || ''}` }, `<div class="hbar-label">${escape(r.label)}</div>
         <div class="hbar-track"><div class="hbar-fill"></div>${r.ci ? '<div class="hbar-ci"></div>' : ''}</div>
         <div class="hbar-value">${escape(r.value)}</div>`);
@@ -137,10 +148,12 @@
       .map(([label, n]) => ({ label, x: n, value: `${n}` }));
     const subjects = document.getElementById('subject-bars');
     if (subjects) bars(subjects, rows, rows[0].x);
-    const results = [...data.results].sort((a, b) => b.target_recall - a.target_recall)
-      .map((r) => ({ label: r.name, x: r.target_recall, ci: r.ci95, value: pct(r.target_recall) }));
+    // Grouped by model family; a family name heads the first bar of each group.
+    const results = byFamily(data.results).map((r, i, all) => ({ label: r.name, x: r.target_recall, ci: r.ci95, value: pct(r.target_recall),
+      family: !i || family(all[i - 1].id)[0] !== family(r.id)[0] ? family(r.id)[1] : null }));
     bars(document.getElementById('result-bars'), results, 1);
-    document.querySelector('#result-bars .hbar').classList.add('is-best');
+    const top = Math.max(...results.map((r) => r.x));
+    document.querySelectorAll('#result-bars .hbar')[results.findIndex((r) => r.x === top)].classList.add('is-best');
     document.getElementById('results-lead').textContent =
       `Share of the moments people kept in which the agent kept a frame, on ${data.cohort_videos} videos / ` +
       `${data.cohort_targets.toLocaleString()} reference moments shared by all backbones (bars: 95% bootstrap CI).`;
@@ -182,82 +195,7 @@
     };
     const hideTip = () => tip.classList.remove('is-visible');
 
-    // Position-in-video against progress through the session, for the annotator and the selected backbone.
-    let pathAnim = 0;
-    const drawPath = () => {
-      const v = current, m = v.models[selected];
-      const box = document.getElementById('path-plot');
-      document.getElementById('path-model').textContent = m.name;
-      cancelAnimationFrame(pathAnim);
-      box.innerHTML = '';
-      const W = 1000, H = 340, L = 54, R = 14, T = 14, B = 26;
-      const sx = (k) => L + k * (W - L - R);
-      const sy = (t) => H - B - (Math.max(0, Math.min(t, v.duration)) / v.duration) * (H - T - B);
-      const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'path-svg' });
-      box.appendChild(s);
-      v.human.forEach(([a, b]) => s.appendChild(svg('rect', { x: L, width: W - L - R, y: sy(b), height: Math.max(1.5, sy(a) - sy(b)), class: 'path-band' })));
-      [0, 0.25, 0.5, 0.75, 1].forEach((f) => {
-        s.appendChild(svg('line', { x1: L, x2: W - R, y1: sy(f * v.duration), y2: sy(f * v.duration), class: 'path-grid' }));
-        const t = svg('text', { x: L - 8, y: sy(f * v.duration) + 4, class: 'path-tick', 'text-anchor': 'end' });
-        t.textContent = fmt(f * v.duration);
-        s.appendChild(t);
-      });
-      [['start of session', L, 'start'], ['end', W - R, 'end']].forEach(([label, x, anchor]) => {
-        const t = svg('text', { x, y: H - 6, class: 'path-tick', 'text-anchor': anchor });
-        t.textContent = label;
-        s.appendChild(t);
-      });
-      // Both sessions are stretched to the same width so their order of moves can be compared.
-      const series = (points) => {
-        const end = points[points.length - 1][0] || 1;
-        return points.map(([e, t, kind]) => [sx(e / end), sy(t), kind, t]);
-      };
-      const people = series(v.human_path && v.human_path.length ? v.human_path : [[0, 0, 'play'], [1, v.duration, 'play']]);
-      const agent = series(m.trajectory.length ? m.trajectory : [[0, 0, ''], [1, 0, '']]);
-      const draw = (pts, cls) => {
-        const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('');
-        const path = svg('path', { d, class: `path-line ${cls}` });
-        s.appendChild(path);
-        const backs = [];
-        for (let i = 1; i < pts.length; i++) {
-          if (pts[i][3] < pts[i - 1][3] - 2) {
-            const seg = svg('line', { x1: pts[i - 1][0], y1: pts[i - 1][1], x2: pts[i][0], y2: pts[i][1], class: 'path-back' });
-            s.appendChild(seg);
-            backs.push({ seg, x: pts[i][0] });
-          }
-        }
-        const head = svg('circle', { r: 5.5, class: `path-head-dot ${cls}` });
-        s.appendChild(head);
-        const len = path.getTotalLength();
-        path.style.strokeDasharray = `${len} ${len}`;
-        return { path, head, len, backs };
-      };
-      const lines = [draw(people, 'people'), draw(agent, 'agent')];
-      const count = (pts, test) => pts.filter((p, i) => i && test(p, pts[i - 1])).length;
-      const back = (p, q) => p[3] < q[3] - 2;
-      const jump = (p, q) => p[3] > q[3] + 8 && Math.abs(p[0] - q[0]) < 6;
-      document.getElementById('path-stats').innerHTML = [
-        ['Look-backs', count(people, back), count(agent, back)],
-        ['Jumps forward', count(people, jump), count(agent, jump)],
-        ['Moments kept', v.human.length, m.pairs_total],
-      ].map(([label, a, b]) => `<div><span>${label}</span><b class="c-human">${a}</b><em>people</em><b class="c-agent">${b}</b><em>${escape(m.name)}</em></div>`).join('');
-      const t0 = performance.now(), D = 6500;
-      const tick = (now) => {
-        const k = Math.min((now - t0) / D, 1);
-        const e = 1 - Math.pow(1 - k, 2);
-        lines.forEach(({ path, head, len, backs }) => {
-          path.style.strokeDashoffset = `${len * (1 - e)}`;
-          const pt = path.getPointAtLength(len * e);
-          head.setAttribute('cx', pt.x); head.setAttribute('cy', pt.y);
-          backs.forEach((bk) => bk.seg.classList.toggle('is-on', bk.x <= pt.x + 0.5));
-        });
-        if (k < 1) pathAnim = requestAnimationFrame(tick);
-      };
-      pathAnim = requestAnimationFrame(tick);
-    };
-
     const renderStrip = () => {
-      drawPath();
       strip.innerHTML = '';
       current.models[selected].pairs.forEach((p) => strip.appendChild(pairCard(p)));
       lanes.querySelectorAll('.lane-name').forEach((n) => n.classList.toggle('is-selected', n.dataset.model === selected));
@@ -272,6 +210,7 @@
       document.getElementById('viewer-title').innerHTML = `<a href="${v.url}" target="_blank">${escape(v.title.replace(/ - YouTube$/, ''))}</a>`;
       document.getElementById('viewer-meta').textContent = `${v.category} · ${fmt(v.duration)} · ${v.human.length} human targets`;
       lanes.innerHTML = '';
+      lanes.appendChild(el('div', { class: 'lane lane-header' }, '<div></div><div></div><div class="lane-score">found</div>'));
       const human = el('div', { class: 'lane human' }, '<div class="lane-name">Human</div>');
       const hs = svg('svg', { viewBox: `0 0 ${W} 22`, width: W });
       hs.appendChild(svg('rect', { x: 0, y: 6, width: W, height: 10, rx: 5, fill: 'var(--lane-bg)' }));
@@ -280,10 +219,10 @@
         hs.appendChild(svg('rect', { x: x(s), y: 4, width: Math.max(3, x(e) - x(s)), height: 14, rx: 4, fill: 'var(--human)', 'fill-opacity': 0.2 + 0.16 * k }));
       });
       human.appendChild(hs);
-      human.appendChild(el('div', { class: 'lane-score' }, ''));
+      human.appendChild(el('div', { class: 'lane-score' }, `${v.human.length}<small> kept</small>`));
       lanes.appendChild(human);
       const heads = [];
-      Object.entries(v.models).forEach(([id, m]) => {
+      byFamily(data.results).filter((r) => v.models[r.id]).map((r) => [r.id, v.models[r.id]]).forEach(([id, m]) => {
         const lane = el('div', { class: 'lane' }, `<div class="lane-name" data-model="${id}">${escape(m.name)}</div>`);
         lane.querySelector('.lane-name').onclick = () => { selected = id; renderStrip(); };
         const s = svg('svg', { viewBox: `0 0 ${W} 34`, width: W });
@@ -301,7 +240,7 @@
           s.appendChild(dot);
         });
         lane.appendChild(s);
-        lane.appendChild(el('div', { class: 'lane-score' }, `${Math.round(100 * m.recall)}%`));
+        lane.appendChild(el('div', { class: 'lane-score', title: 'moments people kept that this backbone also found' }, `${Math.round(m.recall * v.human.length)}<small>/${v.human.length}</small>`));
         lanes.appendChild(lane);
         heads.push({ m, head, trail });
       });
@@ -336,7 +275,8 @@
 
     let resizeTimer;
     window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => current && render(current), 200); });
-    data.videos.forEach((v, i) => {
+    // Showcase only: videos where at least one backbone finds most of what people kept.
+    data.videos.filter((v) => v.group !== 'hard').forEach((v, i) => {
       const c = el('button', { class: 'chip' }, `<span class="chip-group">${groupName[v.group] || v.group}</span>${escape(v.category.split(' / ')[0].split(',')[0])}`);
       c.onclick = () => {
         chips.querySelectorAll('.chip').forEach((b) => b.classList.toggle('is-active', b === c));
@@ -349,6 +289,160 @@
         onVisible(document.getElementById('lanes'), () => document.getElementById('viewer-play').click());
       }
     });
+  }
+
+  // Trajectory: a person's and Qwen3.5-27B's real sessions replayed on the video's own progress bar.
+  // Arcs above the bar are jumps forward, arcs below are look-backs, lit blocks are the moments each one kept.
+  // The videos (data.traces) are picked in export_showcase.py: similar moments for both, with clear gaps between.
+  function trace(data) {
+    const root = document.getElementById('trace');
+    const chips = document.getElementById('trace-chips');
+    if (!root) return;
+    const videos = data.traces || [];
+    const D = 16000;
+    let anim = 0, current = null;
+
+    // A move is played when the video advanced no faster than about 3x the session clock; otherwise it is a jump.
+    const moves = (points) => {
+      const end = points[points.length - 1][0] || 1;
+      const out = [];
+      for (let i = 1; i < points.length; i++) {
+        const [ea, ta] = points[i - 1], [eb, tb, kind] = points[i];
+        const dt = tb - ta, de = eb - ea;
+        const type = dt < -2 ? 'back' : dt > 3 * de + 3 ? 'jump' : 'play';
+        out.push({ type, ka: ea / end, kb: eb / end, ta, tb, kind });
+      }
+      return out;
+    };
+
+    const build = (v) => {
+      current = v;
+      cancelAnimationFrame(anim);
+      const m = v.model;
+      document.getElementById('trace-title').innerHTML = `<a href="${v.url}" target="_blank">${escape(v.title.replace(/ - YouTube$/, ''))}</a>`;
+      document.getElementById('trace-meta').textContent = `${v.category} · ${fmt(v.duration)} · both sessions replayed in ${D / 1000} s`;
+      root.innerHTML = '';
+      const W = Math.max(320, Math.round(root.getBoundingClientRect().width)), H = 150, Y = 75;
+      const x = (t) => (W * Math.max(0, Math.min(t, v.duration))) / v.duration;
+      const rows = [
+        { who: 'People', cls: 'people', points: v.human_path.length ? v.human_path : [[0, 0, 'play'], [1, v.duration, 'play']], kept: v.human, ghost: [] },
+        { who: m.name, cls: 'agent', points: m.trajectory, kept: m.segments, ghost: v.human },
+      ];
+      rows.forEach((r) => {
+        r.moves = moves(r.points);
+        const row = el('div', { class: `trace-row ${r.cls}` }, `<div class="trace-top"><div class="trace-who"><b>${escape(r.who)}</b>
+          <span class="trace-now"></span></div><div class="trace-counts"><span><b class="n-jump">0</b>jumps</span>
+          <span><b class="n-back">0</b>look-backs</span><span><b class="n-kept">0</b>moments kept</span></div></div>`);
+        const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, class: 'trace-svg' });
+        s.appendChild(svg('rect', { x: 0, y: Y - 7, width: W, height: 14, rx: 7, class: 'trace-bar' }));
+        r.ghost.forEach(([a, b]) => s.appendChild(svg('rect', { x: x(a), y: Y - 7, width: Math.max(2, x(b) - x(a)), height: 14, rx: 4, class: 'trace-ghost' })));
+        r.seen = svg('g', {}); s.appendChild(r.seen);
+        r.arcs = svg('g', {}); s.appendChild(r.arcs);
+        r.blocks = r.kept.map(([a, b]) => {
+          const n = svg('rect', { x: x(a), y: Y - 7, width: Math.max(3, x(b) - x(a)), height: 14, rx: 4, class: `trace-kept ${r.cls}` });
+          s.appendChild(n);
+          // Lit once the playhead first passes the end of the moment.
+          const at = r.moves.find((mv) => mv.tb >= b);
+          return { n, k: at ? at.kb : 1, label: `${fmt(a)}–${fmt(b)}` };
+        });
+        r.line = svg('line', { y1: Y - 22, y2: Y + 22, class: `trace-line ${r.cls}` }); s.appendChild(r.line);
+        r.dot = svg('circle', { cy: Y, r: 7, class: `trace-dot ${r.cls}` }); s.appendChild(r.dot);
+        r.time = svg('text', { y: Y - 28, class: 'trace-time', 'text-anchor': 'middle' }); s.appendChild(r.time);
+        row.appendChild(s);
+        root.appendChild(row);
+        r.row = row; r.x = x; r.Y = Y; r.W = W;
+      });
+      const axis = el('div', { class: 'trace-axis' }, [0, 0.25, 0.5, 0.75, 1].map((f) => `<span>${fmt(f * v.duration)}</span>`).join(''));
+      root.insertBefore(axis, root.children[1]);
+      current.rows = rows;
+      play();
+    };
+
+    const play = () => {
+      cancelAnimationFrame(anim);
+      const rows = current.rows;
+      rows.forEach((r) => {
+        r.seen.innerHTML = ''; r.arcs.innerHTML = '';
+        r.blocks.forEach((b) => b.n.classList.remove('is-on'));
+        r.done = 0; r.seenRect = null; r.note = { text: '', until: 0 };
+        ['jump', 'back', 'kept'].forEach((c) => { r.row.querySelector(`.n-${c}`).textContent = '0'; });
+        r.count = { jump: 0, back: 0, kept: 0 };
+      });
+      const t0 = performance.now();
+      const tick = (now) => {
+        const k = Math.min((now - t0) / D, 1);
+        rows.forEach((r) => {
+          const { x, Y } = r;
+          // Finish every move that ends before k.
+          while (r.done < r.moves.length && r.moves[r.done].kb <= k) {
+            const mv = r.moves[r.done++];
+            if (mv.type === 'play') {
+              if (!r.seenRect || Math.abs(+r.seenRect.dataset.to - mv.ta) > 1) {
+                r.seenRect = svg('rect', { y: Y - 7, height: 14, rx: 4, class: 'trace-seen' });
+                r.seenRect.dataset.from = mv.ta;
+                r.seen.appendChild(r.seenRect);
+              }
+              r.seenRect.dataset.to = mv.tb;
+              const a = Math.min(+r.seenRect.dataset.from, mv.tb), b = Math.max(+r.seenRect.dataset.from, mv.tb);
+              r.seenRect.setAttribute('x', x(a)); r.seenRect.setAttribute('width', Math.max(1, x(b) - x(a)));
+            } else {
+              r.seenRect = null;
+              const x1 = x(mv.ta), x2 = x(mv.tb), dx = Math.abs(x2 - x1);
+              if (dx < 2) continue;
+              const h = Math.min(56, 10 + dx * 0.18) * (mv.type === 'jump' ? -1 : 1);
+              const y0 = Y + (mv.type === 'jump' ? -9 : 9);
+              const arc = svg('path', { d: `M${x1},${y0} Q${(x1 + x2) / 2},${y0 + 2 * h} ${x2},${y0}`, class: `trace-arc ${mv.type}` });
+              r.arcs.appendChild(arc);
+              const len = arc.getTotalLength();
+              arc.style.strokeDasharray = `${len}`;
+              arc.style.strokeDashoffset = `${len}`;
+              requestAnimationFrame(() => arc.classList.add('is-drawn'));
+              r.count[mv.type]++;
+              r.row.querySelector(`.n-${mv.type}`).textContent = r.count[mv.type];
+              const d = Math.round(Math.abs(mv.tb - mv.ta));
+              r.note = { text: mv.type === 'jump' ? `jump <b>+${d} s</b>` : `look back <b>−${d} s</b>`, until: k + 0.04, cls: mv.type };
+            }
+          }
+          r.blocks.forEach((b) => {
+            if (b.k <= k && !b.n.classList.contains('is-on')) {
+              b.n.classList.add('is-on');
+              r.row.querySelector('.n-kept').textContent = ++r.count.kept;
+              r.note = { text: `kept <b>${b.label}</b>`, until: k + 0.05, cls: 'kept' };
+            }
+          });
+          // Playhead: glide through played moves, hold then hop on jumps.
+          const mv = r.moves[Math.min(r.done, r.moves.length - 1)];
+          let t = mv ? mv.ta : 0;
+          if (mv && r.done < r.moves.length && mv.type === 'play') t = mv.ta + (mv.tb - mv.ta) * Math.max(0, Math.min(1, (k - mv.ka) / ((mv.kb - mv.ka) || 1)));
+          if (r.done >= r.moves.length && mv) t = mv.tb;
+          const px = x(t);
+          r.dot.setAttribute('cx', px); r.line.setAttribute('x1', px); r.line.setAttribute('x2', px);
+          r.time.setAttribute('x', Math.max(20, Math.min(px, r.W - 20)));
+          r.time.textContent = fmt(t);
+          const live = r.row.querySelector('.trace-now');
+          const note = k < r.note.until ? r.note : { text: k >= 1 ? 'done' : `watching <b>${fmt(t)}</b>`, cls: '' };
+          if (live.dataset.text !== note.text) { live.innerHTML = note.text; live.dataset.text = note.text; live.className = `trace-now ${note.cls}`; }
+        });
+        if (k < 1) anim = requestAnimationFrame(tick);
+      };
+      anim = requestAnimationFrame(tick);
+    };
+
+    document.getElementById('trace-play').onclick = play;
+    videos.forEach((v, i) => {
+      const c = el('button', { class: 'chip' }, escape(v.category.split(' / ')[0].split(',')[0]));
+      c.onclick = () => {
+        chips.querySelectorAll('.chip').forEach((b) => b.classList.toggle('is-active', b === c));
+        build(v);
+      };
+      chips.appendChild(c);
+      if (i === 0) c.classList.add('is-active');
+    });
+    if (!videos.length) return;
+    current = videos[0];
+    onVisible(root, () => build(videos[0]));
+    let resizeTimer;
+    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => current.rows && build(current), 200); });
   }
 
   // Gallery of a few in-target example pairs, with tilt and a lightbox.
@@ -524,8 +618,8 @@
     window.addEventListener('mousemove', (e) => { glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`; }, { passive: true });
   }
 
-  fetch('data/showcase.json?v=11').then((r) => r.json()).then((data) => {
-    wall(data); hero3d(); teaser(data); stats(data); benchmark(data); viewer(data); gallery(data);
+  fetch('data/showcase.json?v=13').then((r) => r.json()).then((data) => {
+    wall(data); hero3d(); teaser(data); stats(data); benchmark(data); trace(data); viewer(data); gallery(data);
     if (window.PRK) { window.PRK.story && window.PRK.story(data); window.PRK.charts && window.PRK.charts(data); }
     if (window.AOS) AOS.refresh();
   });

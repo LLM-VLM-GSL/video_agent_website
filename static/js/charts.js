@@ -162,16 +162,19 @@ window.PRK.charts = function (data) {
     grid.className = 'heat';
     grid.style.gridTemplateColumns = `150px repeat(${cats.length}, minmax(0, 1fr))`;
     grid.innerHTML = '<div></div>' + cats.map(([c, v]) => `<div class="heat-col">${SHORT[c]}<small>${v.videos}</small></div>`).join('');
-    results.forEach((r, i) => {
+    const rows = window.PRK.byFamily(data.results);
+    rows.forEach((r, i) => {
       const label = document.createElement('div');
-      label.className = 'heat-row';
+      // A hairline above the first row of each model family.
+      const first = i && window.PRK.family(rows[i - 1].id)[0] !== window.PRK.family(r.id)[0];
+      label.className = `heat-row${first ? ' is-family' : ''}`;
       label.textContent = r.name;
       grid.appendChild(label);
       cats.forEach(([c, v], j) => {
         const x = v.recall[r.id];
         const cell = document.createElement('div');
         const f = (x - lo) / (hi - lo);
-        cell.className = 'heat-cell';
+        cell.className = `heat-cell${first ? ' is-family' : ''}`;
         cell.style.cssText = `background:${ramp(f)};color:${f > 0.55 ? '#0b1220' : '#e8edf5'};--d:${(i + j) * 25}ms`;
         cell.textContent = Math.round(100 * x);
         hover(cell, `<b>${esc(r.name)}</b> · ${esc(c)}<br>Moment recall ${pct(x)} on ${v.videos} videos`);
