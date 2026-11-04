@@ -1,4 +1,4 @@
-// Native dark-theme charts built from data/showcase.json: findings, subject heatmap, complementarity, benchmark histograms.
+// Native dark-theme charts built from data/core.json: findings, subject heatmap, complementarity, benchmark histograms.
 window.PRK = window.PRK || {};
 window.PRK.charts = function (data) {
   const NS = 'http://www.w3.org/2000/svg';

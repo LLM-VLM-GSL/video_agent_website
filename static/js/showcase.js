@@ -1,4 +1,5 @@
-// Builds the data-driven parts of the page from data/showcase.json (written by scripts/export_showcase.py).
+// Builds the data-driven parts of the page from the chunks in data/ (scripts/export_showcase.py, then scripts/build_site.py).
+// Each section loads its own chunk when it comes near; the hero wall is static HTML.
 (function () {
   const SVG = 'http://www.w3.org/2000/svg';
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -489,28 +490,9 @@
     }
   }
 
-  // Hero background: rows of real collected moments drifting in opposite directions.
-  function wall(data) {
-    const pairs = [];
-    data.videos.forEach((v) => Object.values(v.models).forEach((m) => m.pairs.forEach((p) => pairs.push(p))));
-    for (let i = pairs.length - 1; i > 0; i--) {
-      const j = (i * 7919) % (i + 1);
-      [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
-    }
-    const rows = 5;
-    const per = 14;
-    const wallEl = document.getElementById('pair-wall');
-    for (let r = 0; r < rows; r++) {
-      const row = el('div', { class: 'wall-row' });
-      const pick = pairs.slice(r * per, (r + 1) * per);
-      [...pick, ...pick].forEach((p) => {
-        const cell = el('span', { class: 'wall-cell', 'data-t': p.t },
-          `<img src="${p.img}" alt="" loading="${r < 3 ? 'eager' : 'lazy'}"><i class="wall-lock"><b></b><b></b><b></b><b></b><span></span></i>`);
-        row.appendChild(cell);
-      });
-      wallEl.appendChild(row);
-    }
-    wallEl.querySelectorAll('img').forEach((img) => {
+  // Hero background: static rows of kept moments (scripts/build_site.py); each thumbnail fades in once it arrives.
+  function wall() {
+    document.querySelectorAll('#pair-wall img').forEach((img) => {
       const shown = () => img.classList.add('is-loaded');
       if (img.complete && img.naturalWidth) shown(); else img.addEventListener('load', shown, { once: true });
     });
@@ -638,13 +620,39 @@
   }
   document.querySelectorAll('video').forEach(videoLoader);
 
+  // Data chunks: fetched once each, the version from build_site.py busts the cache when the data change.
+  const version = (document.querySelector('meta[name="prk-data"]') || {}).content || '';
+  const chunks = {};
+  const load = (name) => (chunks[name] = chunks[name] || fetch(`data/${name}.json?v=${version}`).then((r) => {
+    if (!r.ok) throw new Error(`${name}.json: ${r.status}`);
+    return r.json();
+  }));
+  // Run fn once the section is within about a screen of the viewport.
+  const near = (id, fn) => {
+    const node = document.getElementById(id);
+    if (!node) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { io.disconnect(); fn(); }
+    }, { rootMargin: '100% 0px' });
+    io.observe(node);
+  };
+  const settle = () => window.AOS && AOS.refresh();
   const status = document.getElementById('hero-status');
-  fetch('data/showcase.json?v=13').then((r) => r.json()).then((data) => {
-    wall(data); hero3d(); teaser(data); stats(data); benchmark(data); trace(data); viewer(data); gallery(data);
-    if (window.PRK) { window.PRK.story && window.PRK.story(data); window.PRK.charts && window.PRK.charts(data); }
-    if (window.AOS) AOS.refresh();
+  const offline = () => { status.textContent = 'PRK // DATA OFFLINE'; };
+
+  wall();
+  hero3d();
+  Promise.all([load('core'), load('teasers')]).then(([core, teasers]) => {
+    teaser(teasers); stats(core); benchmark(core);
+    window.PRK.charts && window.PRK.charts(core);
+    settle();
     status.textContent = 'PRK // AGENT ONLINE';
-  }).catch(() => { status.textContent = 'PRK // DATA OFFLINE'; });
+  }).catch(offline);
+  near('method', () => load('story').then((d) => { window.PRK.story && window.PRK.story(d); settle(); }).catch(offline));
+  near('trajectory', () => load('traces').then((d) => { trace(d); settle(); }).catch(offline));
+  const videos = () => Promise.all([load('core'), load('videos')]).then(([core, d]) => ({ ...core, ...d }));
+  near('viewer', () => videos().then((d) => { viewer(d); settle(); }).catch(offline));
+  near('gallery', () => videos().then((d) => { gallery(d); settle(); }).catch(offline));
   chrome();
   scrub();
   // Start the reveal animations now; waiting for window load kept the page dark until every image had arrived.

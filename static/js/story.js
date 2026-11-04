@@ -1,5 +1,5 @@
 // Method section: a scroll-driven walk through one real kept moment (skim, pause, rewind, keep).
-// Frames, the moment interval, its subtitles and the verifier's rationale come from data/showcase.json.
+// Frames, the moment interval, its subtitles and the verifier's rationale come from data/story.json.
 window.PRK = window.PRK || {};
 window.PRK.story = function (data) {
   const root = document.getElementById('story');
