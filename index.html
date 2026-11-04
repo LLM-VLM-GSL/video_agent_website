@@ -14,14 +14,14 @@
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
-  <link rel="stylesheet" href="static/css/showcase.css?v=19">
+  <link rel="stylesheet" href="static/css/showcase.css?v=20">
   <script defer src="static/js/fontawesome.all.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script defer src="static/js/index.js?v=4"></script>
   <script defer src="static/js/story.js?v=4"></script>
   <script defer src="static/js/charts.js?v=6"></script>
-  <script defer src="static/js/showcase.js?v=13"></script>
+  <script defer src="static/js/showcase.js?v=14"></script>
   <script defer src="static/js/snap.js?v=2"></script>
 </head>
 <body>
@@ -49,30 +49,18 @@
 <main id="main-content">
 
 <!-- Hero: a scrolling wall of real collected moments behind the title -->
-<section class="hero-stage" id="top">
-  <div class="hero-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-  <div class="hero-grid" aria-hidden="true"></div>
+<section class="hero-stage hero-3d" id="top">
   <div class="pair-wall" id="pair-wall" aria-hidden="true"></div>
-  <div class="hero-vp" aria-hidden="true"><i></i></div>
-  <div class="hero-hud" id="hero-hud" aria-hidden="true">
-    <div class="hud-panel hud-log" data-depth="18">
-      <div class="hud-bar"><span>AGENT LOG</span><em>● live</em></div>
-      <div class="hud-lines" id="hud-lines"></div>
-    </div>
-    <div class="hud-panel hud-frame" data-depth="28">
-      <div class="hud-bar"><span>FRAME SELECTOR</span><em id="hud-frame-time">09:42</em></div>
-      <div class="hud-view"><img id="hud-frame-img" alt=""><b class="hud-corner tl"></b><b class="hud-corner tr"></b><b class="hud-corner bl"></b><b class="hud-corner br"></b><i class="hud-scan"></i></div>
-      <div class="hud-caption" id="hud-frame-cap">best view · subtitles aligned ✓</div>
-    </div>
-    <div class="hud-chip hud-chip-a" data-depth="10">VLM · planner</div>
-    <div class="hud-chip hud-chip-b" data-depth="14">triage · Δ frame 0.06</div>
-    <svg class="hud-cursor" viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.4-7.6L20.5 11z"/></svg>
-    <i class="hud-ripple"></i>
-  </div>
-  <div class="hero-frost" aria-hidden="true"></div>
-  <div class="hero-horizon" aria-hidden="true"></div>
+  <div class="hero-tint" aria-hidden="true"></div>
   <div class="hero-veil"></div>
-  <div class="hero-grain" aria-hidden="true"></div>
+  <div class="hero-scan" aria-hidden="true"></div>
+  <div class="hero-frame" aria-hidden="true">
+    <b></b><b></b><b></b><b></b>
+    <span class="tl">PRK // AGENT ONLINE</span>
+    <span class="tr"><em>●</em> REC · 2× PLAYBACK</span>
+    <span class="bl">MOMENTS KEPT <strong id="hero-kept">0000</strong></span>
+    <span class="br" id="hero-clock">T+00:00:00</span>
+  </div>
   <div class="hero-content">
     <h1 class="hero-title" data-aos="zoom-out" data-aos-duration="1000">
       <span class="gradient-text">Pause, Rewind, Keep:</span><br>

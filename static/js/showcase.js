@@ -395,25 +395,82 @@
     }
   }
 
-  // Hero background: rows of real collected pairs drifting in opposite directions.
+  // Hero background: rows of real collected moments drifting in opposite directions.
   function wall(data) {
-    const imgs = [];
-    data.videos.forEach((v) => Object.values(v.models).forEach((m) => m.pairs.forEach((p) => imgs.push(p.img))));
-    for (let i = imgs.length - 1; i > 0; i--) {
+    const pairs = [];
+    data.videos.forEach((v) => Object.values(v.models).forEach((m) => m.pairs.forEach((p) => pairs.push(p))));
+    for (let i = pairs.length - 1; i > 0; i--) {
       const j = (i * 7919) % (i + 1);
-      [imgs[i], imgs[j]] = [imgs[j], imgs[i]];
+      [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
     }
-    const rows = 9;
+    const rows = 5;
     const per = 14;
     const wallEl = document.getElementById('pair-wall');
     for (let r = 0; r < rows; r++) {
-      // Rows run far (top) to near (bottom): distant rows fade and blur like a shallow depth of field.
-      const near = r / (rows - 1);
-      const row = el('div', { class: 'wall-row', style: `opacity:${(0.12 + 0.88 * near ** 1.6).toFixed(2)};filter:blur(${((1 - near) * 3).toFixed(1)}px)` });
-      const pick = imgs.slice(r * per, (r + 1) * per);
-      [...pick, ...pick].forEach((src) => row.appendChild(el('img', { src, alt: '', loading: 'eager' })));
+      const row = el('div', { class: 'wall-row' });
+      const pick = pairs.slice(r * per, (r + 1) * per);
+      [...pick, ...pick].forEach((p) => {
+        const cell = el('span', { class: 'wall-cell', 'data-t': p.t },
+          `<img src="${p.img}" alt="" loading="${r < 3 ? 'eager' : 'lazy'}"><i class="wall-lock"><b></b><b></b><b></b><b></b><span></span></i>`);
+        row.appendChild(cell);
+      });
       wallEl.appendChild(row);
     }
+  }
+
+  // 3D layer on the hero: the wall leans toward the pointer and the agent locks onto moments at the edges.
+  // ?hero=classic shows the plain wall.
+  function hero3d() {
+    const stage = document.getElementById('top');
+    if (new URLSearchParams(location.search).get('hero') === 'classic') stage.classList.remove('hero-3d');
+    if (!stage.classList.contains('hero-3d')) return;
+    const wallEl = document.getElementById('pair-wall');
+    let tx = 0, ty = 0, gx = 0, gy = 0;
+    window.addEventListener('mousemove', (e) => {
+      gx = (e.clientX / window.innerWidth - 0.5) * 10;
+      gy = (0.5 - e.clientY / window.innerHeight) * 8;
+    }, { passive: true });
+    const lean = () => {
+      tx += (gx - tx) * 0.06; ty += (gy - ty) * 0.06;
+      wallEl.style.setProperty('--tx', `${tx.toFixed(2)}deg`);
+      wallEl.style.setProperty('--ty', `${ty.toFixed(2)}deg`);
+      requestAnimationFrame(lean);
+    };
+    lean();
+
+    const kept = document.getElementById('hero-kept');
+    const clock = document.getElementById('hero-clock');
+    const t0 = performance.now();
+    let n = 0;
+    setInterval(() => {
+      const s = Math.floor((performance.now() - t0) / 1000);
+      clock.textContent = `T+${[s / 3600, (s / 60) % 60, s % 60].map((x) => String(Math.floor(x)).padStart(2, '0')).join(':')}`;
+    }, 1000);
+    const cells = [...wallEl.querySelectorAll('.wall-cell')];
+    const parts = [...stage.querySelectorAll('.hero-title > span, .hero-sub, .publication-links > a')];
+    const lock = () => {
+      if (window.scrollY < window.innerHeight) {
+        const W = window.innerWidth, H = window.innerHeight;
+        // Only moments fully on screen and clear of the title block, with room for the lift.
+        const rs = parts.map((n) => n.getBoundingClientRect()), pad = 40;
+        const box = { left: Math.min(...rs.map((r) => r.left)), right: Math.max(...rs.map((r) => r.right)),
+          top: Math.min(...rs.map((r) => r.top)), bottom: Math.max(...rs.map((r) => r.bottom)) };
+        const free = cells.filter((c) => {
+          const r = c.getBoundingClientRect();
+          const clear = r.right < box.left - pad || r.left > box.right + pad || r.bottom < box.top - pad || r.top > box.bottom + pad;
+          return clear && r.left > 40 && r.right < W - 60 && r.top > 60 && r.bottom < H - 70;
+        });
+        const c = free[Math.floor(Math.random() * free.length)];
+        if (c) {
+          c.querySelector('.wall-lock span').textContent = `KEEP · ${fmt(+c.dataset.t)}`;
+          c.classList.add('is-lock');
+          kept.textContent = String(++n).padStart(4, '0');
+          setTimeout(() => c.classList.remove('is-lock'), 2400);
+        }
+      }
+      setTimeout(lock, 1400);
+    };
+    setTimeout(lock, 900);
   }
 
   // Abstract: wrap every word, then light words up as the paragraph scrolls through the viewport.
@@ -448,59 +505,6 @@
     update();
   }
 
-  // Hero HUD: a live-typed agent log and a frame-selector viewfinder cycling through real kept frames.
-  function hud(data) {
-    const root = document.getElementById('hero-hud');
-    if (!root) return;
-    const LOG = [
-      ['seek', 'skim +18 s · no visual change'], ['seek', 'skim +24 s · no visual change'],
-      ['tri', 'triage · new visual, worth a look'], ['back', 'rewind −8 s · bisect 1/3'],
-      ['back', 'rewind −4 s · start found'], ['rec', 'REC ● recording segment'],
-      ['sel', 'frame selector · candidate 2/4'], ['ok', 'verifier · subtitles explain frame ✓'],
-      ['keep', 'moment kept · 09:35–10:43'],
-    ];
-    const lines = document.getElementById('hud-lines');
-    let li = 0;
-    const type = () => {
-      const [kind, text] = LOG[li % LOG.length];
-      const row = el('div', { class: `hud-line ${kind}` }, '<span class="hud-caret"></span>');
-      lines.appendChild(row);
-      while (lines.children.length > 6) lines.firstChild.remove();
-      let c = 0;
-      const span = el('span');
-      row.insertBefore(span, row.firstChild);
-      const tick = setInterval(() => {
-        span.textContent = `› ${text.slice(0, ++c)}`;
-        if (c >= text.length) { clearInterval(tick); row.classList.add('is-done'); li++; setTimeout(type, 520); }
-      }, 26);
-    };
-    // Start with a few finished lines so the panel is never empty.
-    LOG.slice(0, 4).forEach(([kind, text]) => lines.appendChild(el('div', { class: `hud-line ${kind} is-done` }, escape(`› ${text}`))));
-    li = 4;
-    type();
-    const frames = [];
-    data.videos.forEach((v) => Object.values(v.models).forEach((m) => m.pairs.forEach((p) => { if (p.hit) frames.push(p); })));
-    const img = document.getElementById('hud-frame-img');
-    const time = document.getElementById('hud-frame-time');
-    let fi = 0;
-    const next = () => {
-      const p = frames[(fi++ * 37) % frames.length];
-      if (!p) return;
-      img.src = p.img;
-      time.textContent = fmt(p.t);
-      root.classList.remove('is-click'); void root.offsetWidth; root.classList.add('is-click');
-    };
-    next();
-    setInterval(next, 3200);
-    // Panels drift with the pointer by their depth.
-    const items = [...root.querySelectorAll('[data-depth]')];
-    window.addEventListener('mousemove', (e) => {
-      if (window.scrollY > window.innerHeight) return;
-      const dx = e.clientX / window.innerWidth - 0.5, dy = e.clientY / window.innerHeight - 0.5;
-      items.forEach((n) => { const d = +n.dataset.depth; n.style.translate = `${(-dx * d).toFixed(1)}px ${(-dy * d).toFixed(1)}px`; });
-    }, { passive: true });
-  }
-
   // Floating nav (after the hero), active-section highlight and cursor glow.
   function chrome() {
     const nav = document.getElementById('topnav');
@@ -521,7 +525,7 @@
   }
 
   fetch('data/showcase.json?v=11').then((r) => r.json()).then((data) => {
-    wall(data); hud(data); teaser(data); stats(data); benchmark(data); viewer(data); gallery(data);
+    wall(data); hero3d(); teaser(data); stats(data); benchmark(data); viewer(data); gallery(data);
     if (window.PRK) { window.PRK.story && window.PRK.story(data); window.PRK.charts && window.PRK.charts(data); }
     if (window.AOS) AOS.refresh();
   });
