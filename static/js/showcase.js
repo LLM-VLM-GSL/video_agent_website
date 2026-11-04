@@ -14,6 +14,9 @@
     Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
     return node;
   };
+  // Subtitles are raw speech recognition; drop filler words for display.
+  const clean = (t) => t.replace(/\b(um+|uh+|uh huh|you know)\b[,]?\s*/gi, '').replace(/\s+/g, ' ').trim()
+    .replace(/^./, (c) => c.toUpperCase());
   const escape = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   function onVisible(node, fn) {
@@ -23,32 +26,81 @@
     io.observe(node);
   }
 
-  function countUp(node, target, decimals) {
+  function countUp(node, target, decimals, suffix = '') {
     const start = performance.now();
     const step = (now) => {
       const k = Math.min((now - start) / 1400, 1);
       const v = target * (1 - Math.pow(1 - k, 3));
-      node.textContent = v.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+      node.textContent = v.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
       if (k < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
   }
 
+  // Teaser: clean clip; status, kept count and the people/agent timeline follow the video frame by frame.
   function teaser(data) {
     const video = document.getElementById('teaser-video');
     const tabs = document.getElementById('teaser-tabs');
+    const thumb = tabs.querySelector('.seg-thumb');
+    const human = document.getElementById('lane-human');
+    const agent = document.getElementById('lane-agent');
+    const play = document.getElementById('tl-play');
+    const mode = document.getElementById('teaser-mode');
+    const time = document.getElementById('teaser-time');
+    const kept = document.getElementById('teaser-kept');
+    let clip = null, blocks = [], raf = 0, last = -1;
+    const block = (lane, [a, b], d) => {
+      const n = el('i', { style: `left:${(100 * a) / d}%;width:${Math.max(0.4, (100 * (b - a)) / d)}%` });
+      lane.appendChild(n);
+      return n;
+    };
+    const tick = () => {
+      if (clip && clip.frames.length) {
+        const i = Math.min(clip.frames.length - 1, Math.floor(video.currentTime * clip.fps));
+        if (i !== last) {
+          last = i;
+          const f = clip.frames[i];
+          play.style.left = `${(100 * f.t) / clip.duration}%`;
+          time.textContent = fmt(f.t);
+          mode.textContent = f.mode;
+          mode.classList.toggle('is-capture', f.capture);
+          blocks.forEach((b, j) => b.classList.toggle('is-on', j < f.saved));
+          kept.querySelector('b').textContent = f.saved;
+          kept.classList.toggle('is-bump', f.saved > 0 && f.saved !== +kept.dataset.n);
+          kept.dataset.n = f.saved;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
     const show = (t, button) => {
+      clip = t; last = -1;
       video.src = t.mp4;
       video.play().catch(() => {});
       document.getElementById('teaser-url').textContent = `youtube.com/watch?v=${t.id}`;
-      tabs.querySelectorAll('.teaser-tab').forEach((b) => b.classList.toggle('is-active', b === button));
+      document.getElementById('tl-dur').textContent = fmt(t.duration);
+      human.innerHTML = ''; agent.innerHTML = '';
+      (t.human || []).forEach((h) => block(human, h, t.duration));
+      blocks = (t.segments || []).map((g) => block(agent, g, t.duration));
+      tabs.querySelectorAll('.seg-btn').forEach((b) => b.classList.toggle('is-active', b === button));
+      Object.assign(thumb.style, { left: `${button.offsetLeft}px`, width: `${button.offsetWidth}px` });
     };
     data.teasers.forEach((t, i) => {
-      const b = el('button', { class: 'teaser-tab' }, escape(t.category));
+      const b = el('button', { class: 'seg-btn' }, escape(t.category.split(' / ')[0]));
       b.onclick = () => show(t, b);
       tabs.appendChild(b);
-      if (i === 0) show(t, b);
+      if (i === 0) requestAnimationFrame(() => show(t, b));
     });
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(tick);
+    // The recording grows into place as it scrolls in.
+    const wrap = document.getElementById('teaser-wrap');
+    const grow = () => {
+      const r = wrap.getBoundingClientRect();
+      const k = Math.min(1, Math.max(0, (window.innerHeight - r.top) / (window.innerHeight * 0.75)));
+      wrap.style.setProperty('--k', k.toFixed(3));
+    };
+    window.addEventListener('scroll', grow, { passive: true });
+    grow();
   }
 
   function stats(data) {
@@ -56,13 +108,13 @@
     const best = data.results.reduce((a, b) => (b.target_recall > a.target_recall ? b : a));
     const items = [
       [d.videos, 0, 'videos'], [d.hours, 1, 'hours of video'], [d.targets, 0, 'reference moments'],
-      [Object.keys(data.categories).length, 0, 'subjects'], [100 * best.target_recall, 1, `% moments found (${best.name})`],
+      [Object.keys(data.categories).length, 0, 'subjects'], [100 * best.target_recall, 1, `moments found by the best agent`, '%'],
     ];
     const grid = document.getElementById('stat-grid');
-    items.forEach(([value, decimals, label]) => {
+    items.forEach(([value, decimals, label, suffix]) => {
       const card = el('div', { class: 'stat' }, `<div class="stat-value">0</div><div class="stat-label">${escape(label)}</div>`);
       grid.appendChild(card);
-      onVisible(card, () => countUp(card.querySelector('.stat-value'), value, decimals));
+      onVisible(card, () => countUp(card.querySelector('.stat-value'), value, decimals, suffix));
     });
   }
 
@@ -83,7 +135,8 @@
   function benchmark(data) {
     const rows = Object.entries(data.categories).sort((a, b) => b[1] - a[1])
       .map(([label, n]) => ({ label, x: n, value: `${n}` }));
-    bars(document.getElementById('subject-bars'), rows, rows[0].x);
+    const subjects = document.getElementById('subject-bars');
+    if (subjects) bars(subjects, rows, rows[0].x);
     const results = [...data.results].sort((a, b) => b.target_recall - a.target_recall)
       .map((r) => ({ label: r.name, x: r.target_recall, ci: r.ci95, value: pct(r.target_recall) }));
     bars(document.getElementById('result-bars'), results, 1);
@@ -92,18 +145,12 @@
       `Share of the moments people kept in which the agent kept a frame, on ${data.cohort_videos} videos / ` +
       `${data.cohort_targets.toLocaleString()} reference moments shared by all backbones (bars: 95% bootstrap CI).`;
     const c = data.complementarity;
-    document.getElementById('complementarity-caption').textContent =
-      `Backbones are complementary: ${pct(c.any_model_recall)} of reference moments are found by at least one model, ` +
-      `but only ${pct(c.all_model_recall)} by all ${data.results.length}.`;
     const union = document.getElementById('union-card');
     union.innerHTML = `<div class="union-big">0%</div><div class="union-text">of the moments people kept are found by <b>at least one</b>
       of the ${data.results.length} backbones, against ${pct(results[0].x)} for the best single model and only ${pct(c.all_model_recall)} found by all of them.
       Different models miss different moments — the gap is in <b>discovery</b>, not localization.</div>`;
     const big = union.querySelector('.union-big');
-    onVisible(union, () => {
-      countUp(big, 100 * c.any_model_recall, 1);
-      setTimeout(() => { big.textContent += '%'; }, 1450);
-    });
+    onVisible(union, () => countUp(big, 100 * c.any_model_recall, 1, '%'));
   }
 
   function pairCard(pair, extra, model) {
@@ -111,7 +158,7 @@
     card.innerHTML = `<img src="${pair.img}" alt="" loading="lazy"><div class="pair-body">
       ${model ? `<span class="pair-tag model">${escape(model)}</span>` : ''}<span class="pair-tag ${pair.hit ? 'hit' : 'miss'}">${pair.hit ? 'matches a person' : 'outside'}</span>
       <span class="pair-time">${fmt(pair.s)}–${fmt(pair.e)}</span>
-      <div class="pair-text">${escape(pair.text)}…</div>${extra || ''}</div>`;
+      <div class="pair-text">${escape(clean(pair.text))}…</div>${extra || ''}</div>`;
     return card;
   }
 
@@ -135,7 +182,82 @@
     };
     const hideTip = () => tip.classList.remove('is-visible');
 
+    // Position-in-video against progress through the session, for the annotator and the selected backbone.
+    let pathAnim = 0;
+    const drawPath = () => {
+      const v = current, m = v.models[selected];
+      const box = document.getElementById('path-plot');
+      document.getElementById('path-model').textContent = m.name;
+      cancelAnimationFrame(pathAnim);
+      box.innerHTML = '';
+      const W = 1000, H = 340, L = 54, R = 14, T = 14, B = 26;
+      const sx = (k) => L + k * (W - L - R);
+      const sy = (t) => H - B - (Math.max(0, Math.min(t, v.duration)) / v.duration) * (H - T - B);
+      const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'path-svg' });
+      box.appendChild(s);
+      v.human.forEach(([a, b]) => s.appendChild(svg('rect', { x: L, width: W - L - R, y: sy(b), height: Math.max(1.5, sy(a) - sy(b)), class: 'path-band' })));
+      [0, 0.25, 0.5, 0.75, 1].forEach((f) => {
+        s.appendChild(svg('line', { x1: L, x2: W - R, y1: sy(f * v.duration), y2: sy(f * v.duration), class: 'path-grid' }));
+        const t = svg('text', { x: L - 8, y: sy(f * v.duration) + 4, class: 'path-tick', 'text-anchor': 'end' });
+        t.textContent = fmt(f * v.duration);
+        s.appendChild(t);
+      });
+      [['start of session', L, 'start'], ['end', W - R, 'end']].forEach(([label, x, anchor]) => {
+        const t = svg('text', { x, y: H - 6, class: 'path-tick', 'text-anchor': anchor });
+        t.textContent = label;
+        s.appendChild(t);
+      });
+      // Both sessions are stretched to the same width so their order of moves can be compared.
+      const series = (points) => {
+        const end = points[points.length - 1][0] || 1;
+        return points.map(([e, t, kind]) => [sx(e / end), sy(t), kind, t]);
+      };
+      const people = series(v.human_path && v.human_path.length ? v.human_path : [[0, 0, 'play'], [1, v.duration, 'play']]);
+      const agent = series(m.trajectory.length ? m.trajectory : [[0, 0, ''], [1, 0, '']]);
+      const draw = (pts, cls) => {
+        const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('');
+        const path = svg('path', { d, class: `path-line ${cls}` });
+        s.appendChild(path);
+        const backs = [];
+        for (let i = 1; i < pts.length; i++) {
+          if (pts[i][3] < pts[i - 1][3] - 2) {
+            const seg = svg('line', { x1: pts[i - 1][0], y1: pts[i - 1][1], x2: pts[i][0], y2: pts[i][1], class: 'path-back' });
+            s.appendChild(seg);
+            backs.push({ seg, x: pts[i][0] });
+          }
+        }
+        const head = svg('circle', { r: 5.5, class: `path-head-dot ${cls}` });
+        s.appendChild(head);
+        const len = path.getTotalLength();
+        path.style.strokeDasharray = `${len} ${len}`;
+        return { path, head, len, backs };
+      };
+      const lines = [draw(people, 'people'), draw(agent, 'agent')];
+      const count = (pts, test) => pts.filter((p, i) => i && test(p, pts[i - 1])).length;
+      const back = (p, q) => p[3] < q[3] - 2;
+      const jump = (p, q) => p[3] > q[3] + 8 && Math.abs(p[0] - q[0]) < 6;
+      document.getElementById('path-stats').innerHTML = [
+        ['Look-backs', count(people, back), count(agent, back)],
+        ['Jumps forward', count(people, jump), count(agent, jump)],
+        ['Moments kept', v.human.length, m.pairs_total],
+      ].map(([label, a, b]) => `<div><span>${label}</span><b class="c-human">${a}</b><em>people</em><b class="c-agent">${b}</b><em>${escape(m.name)}</em></div>`).join('');
+      const t0 = performance.now(), D = 6500;
+      const tick = (now) => {
+        const k = Math.min((now - t0) / D, 1);
+        const e = 1 - Math.pow(1 - k, 2);
+        lines.forEach(({ path, head, len, backs }) => {
+          path.style.strokeDashoffset = `${len * (1 - e)}`;
+          const pt = path.getPointAtLength(len * e);
+          head.setAttribute('cx', pt.x); head.setAttribute('cy', pt.y);
+          backs.forEach((bk) => bk.seg.classList.toggle('is-on', bk.x <= pt.x + 0.5));
+        });
+        if (k < 1) pathAnim = requestAnimationFrame(tick);
+      };
+      pathAnim = requestAnimationFrame(tick);
+    };
+
     const renderStrip = () => {
+      drawPath();
       strip.innerHTML = '';
       current.models[selected].pairs.forEach((p) => strip.appendChild(pairCard(p)));
       lanes.querySelectorAll('.lane-name').forEach((n) => n.classList.toggle('is-selected', n.dataset.model === selected));
@@ -240,7 +362,7 @@
         <span class="pair-tag model">${escape(model)}</span><span class="pair-tag hit">matches a person</span>
         <span class="pair-time">${fmt(p.s)}–${fmt(p.e)}</span>
         <h4><a href="${v.url}&t=${Math.floor(p.s)}s" target="_blank">${escape(v.title.replace(/ - YouTube$/, ''))}</a></h4>
-        <div>${escape(p.text)}…</div>
+        <div>${escape(clean(p.text))}…</div>
         ${p.verifier ? `<div class="lb-quote">Verifier: “${escape(p.verifier)}”</div>` : ''}</div>`;
       box.classList.add('is-open');
     };
@@ -281,15 +403,102 @@
       const j = (i * 7919) % (i + 1);
       [imgs[i], imgs[j]] = [imgs[j], imgs[i]];
     }
-    const rows = 5;
+    const rows = 9;
     const per = 14;
     const wallEl = document.getElementById('pair-wall');
     for (let r = 0; r < rows; r++) {
-      const row = el('div', { class: 'wall-row' });
+      // Rows run far (top) to near (bottom): distant rows fade and blur like a shallow depth of field.
+      const near = r / (rows - 1);
+      const row = el('div', { class: 'wall-row', style: `opacity:${(0.12 + 0.88 * near ** 1.6).toFixed(2)};filter:blur(${((1 - near) * 3).toFixed(1)}px)` });
       const pick = imgs.slice(r * per, (r + 1) * per);
-      [...pick, ...pick].forEach((src) => row.appendChild(el('img', { src, alt: '', loading: r < 3 ? 'eager' : 'lazy' })));
+      [...pick, ...pick].forEach((src) => row.appendChild(el('img', { src, alt: '', loading: 'eager' })));
       wallEl.appendChild(row);
     }
+  }
+
+  // Abstract: wrap every word, then light words up as the paragraph scrolls through the viewport.
+  function scrub() {
+    const root = document.getElementById('abstract');
+    if (!root) return;
+    const wrap = (node) => {
+      [...node.childNodes].forEach((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          const frag = document.createDocumentFragment();
+          child.textContent.split(/(\s+)/).forEach((part) => {
+            frag.appendChild(/\S/.test(part) ? el('span', { class: 'w' }, escape(part)) : document.createTextNode(part));
+          });
+          child.replaceWith(frag);
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+          wrap(child);
+        }
+      });
+    };
+    wrap(root);
+    const words = [...root.querySelectorAll('.w')];
+    let lit = -1;
+    const update = () => {
+      const r = root.getBoundingClientRect();
+      const k = Math.min(1, Math.max(0, (window.innerHeight * 0.82 - r.top) / (r.height + window.innerHeight * 0.1)));
+      const n = Math.round(k * words.length);
+      if (n === lit) return;
+      words.forEach((w, i) => w.classList.toggle('lit', i < n));
+      lit = n;
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  }
+
+  // Hero HUD: a live-typed agent log and a frame-selector viewfinder cycling through real kept frames.
+  function hud(data) {
+    const root = document.getElementById('hero-hud');
+    if (!root) return;
+    const LOG = [
+      ['seek', 'skim +18 s · no visual change'], ['seek', 'skim +24 s · no visual change'],
+      ['tri', 'triage · new visual, worth a look'], ['back', 'rewind −8 s · bisect 1/3'],
+      ['back', 'rewind −4 s · start found'], ['rec', 'REC ● recording segment'],
+      ['sel', 'frame selector · candidate 2/4'], ['ok', 'verifier · subtitles explain frame ✓'],
+      ['keep', 'moment kept · 09:35–10:43'],
+    ];
+    const lines = document.getElementById('hud-lines');
+    let li = 0;
+    const type = () => {
+      const [kind, text] = LOG[li % LOG.length];
+      const row = el('div', { class: `hud-line ${kind}` }, '<span class="hud-caret"></span>');
+      lines.appendChild(row);
+      while (lines.children.length > 6) lines.firstChild.remove();
+      let c = 0;
+      const span = el('span');
+      row.insertBefore(span, row.firstChild);
+      const tick = setInterval(() => {
+        span.textContent = `› ${text.slice(0, ++c)}`;
+        if (c >= text.length) { clearInterval(tick); row.classList.add('is-done'); li++; setTimeout(type, 520); }
+      }, 26);
+    };
+    // Start with a few finished lines so the panel is never empty.
+    LOG.slice(0, 4).forEach(([kind, text]) => lines.appendChild(el('div', { class: `hud-line ${kind} is-done` }, escape(`› ${text}`))));
+    li = 4;
+    type();
+    const frames = [];
+    data.videos.forEach((v) => Object.values(v.models).forEach((m) => m.pairs.forEach((p) => { if (p.hit) frames.push(p); })));
+    const img = document.getElementById('hud-frame-img');
+    const time = document.getElementById('hud-frame-time');
+    let fi = 0;
+    const next = () => {
+      const p = frames[(fi++ * 37) % frames.length];
+      if (!p) return;
+      img.src = p.img;
+      time.textContent = fmt(p.t);
+      root.classList.remove('is-click'); void root.offsetWidth; root.classList.add('is-click');
+    };
+    next();
+    setInterval(next, 3200);
+    // Panels drift with the pointer by their depth.
+    const items = [...root.querySelectorAll('[data-depth]')];
+    window.addEventListener('mousemove', (e) => {
+      if (window.scrollY > window.innerHeight) return;
+      const dx = e.clientX / window.innerWidth - 0.5, dy = e.clientY / window.innerHeight - 0.5;
+      items.forEach((n) => { const d = +n.dataset.depth; n.style.translate = `${(-dx * d).toFixed(1)}px ${(-dy * d).toFixed(1)}px`; });
+    }, { passive: true });
   }
 
   // Floating nav (after the hero), active-section highlight and cursor glow.
@@ -311,10 +520,12 @@
     window.addEventListener('mousemove', (e) => { glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`; }, { passive: true });
   }
 
-  fetch('data/showcase.json?v=5').then((r) => r.json()).then((data) => {
-    wall(data); teaser(data); stats(data); benchmark(data); viewer(data); gallery(data);
+  fetch('data/showcase.json?v=11').then((r) => r.json()).then((data) => {
+    wall(data); hud(data); teaser(data); stats(data); benchmark(data); viewer(data); gallery(data);
+    if (window.PRK) { window.PRK.story && window.PRK.story(data); window.PRK.charts && window.PRK.charts(data); }
     if (window.AOS) AOS.refresh();
   });
   chrome();
+  scrub();
   window.addEventListener('load', () => window.AOS && AOS.init({ duration: 800, once: true, offset: 60, easing: 'ease-out-cubic' }));
 })();

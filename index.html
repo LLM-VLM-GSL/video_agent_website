@@ -14,12 +14,15 @@
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
-  <link rel="stylesheet" href="static/css/showcase.css?v=5">
+  <link rel="stylesheet" href="static/css/showcase.css?v=19">
   <script defer src="static/js/fontawesome.all.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script defer src="static/js/index.js?v=4"></script>
-  <script defer src="static/js/showcase.js?v=5"></script>
+  <script defer src="static/js/story.js?v=4"></script>
+  <script defer src="static/js/charts.js?v=6"></script>
+  <script defer src="static/js/showcase.js?v=13"></script>
+  <script defer src="static/js/snap.js?v=2"></script>
 </head>
 <body>
 
@@ -32,7 +35,9 @@
     <a href="#method">Method</a>
     <a href="#viewer">Explorer</a>
     <a href="#labeler">Labeler</a>
+    <a href="#benchmark">Benchmark</a>
     <a href="#results">Results</a>
+    <a href="#findings">Findings</a>
     <a href="#gallery">Gallery</a>
   </div>
 </nav>
@@ -45,12 +50,33 @@
 
 <!-- Hero: a scrolling wall of real collected moments behind the title -->
 <section class="hero-stage" id="top">
+  <div class="hero-aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="hero-grid" aria-hidden="true"></div>
   <div class="pair-wall" id="pair-wall" aria-hidden="true"></div>
+  <div class="hero-vp" aria-hidden="true"><i></i></div>
+  <div class="hero-hud" id="hero-hud" aria-hidden="true">
+    <div class="hud-panel hud-log" data-depth="18">
+      <div class="hud-bar"><span>AGENT LOG</span><em>● live</em></div>
+      <div class="hud-lines" id="hud-lines"></div>
+    </div>
+    <div class="hud-panel hud-frame" data-depth="28">
+      <div class="hud-bar"><span>FRAME SELECTOR</span><em id="hud-frame-time">09:42</em></div>
+      <div class="hud-view"><img id="hud-frame-img" alt=""><b class="hud-corner tl"></b><b class="hud-corner tr"></b><b class="hud-corner bl"></b><b class="hud-corner br"></b><i class="hud-scan"></i></div>
+      <div class="hud-caption" id="hud-frame-cap">best view · subtitles aligned ✓</div>
+    </div>
+    <div class="hud-chip hud-chip-a" data-depth="10">VLM · planner</div>
+    <div class="hud-chip hud-chip-b" data-depth="14">triage · Δ frame 0.06</div>
+    <svg class="hud-cursor" viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.4-7.6L20.5 11z"/></svg>
+    <i class="hud-ripple"></i>
+  </div>
+  <div class="hero-frost" aria-hidden="true"></div>
+  <div class="hero-horizon" aria-hidden="true"></div>
   <div class="hero-veil"></div>
+  <div class="hero-grain" aria-hidden="true"></div>
   <div class="hero-content">
     <h1 class="hero-title" data-aos="zoom-out" data-aos-duration="1000">
-      Pause, Rewind, <span class="gradient-text">Keep</span>:
-      <span class="hero-title-sub">Agents That Collect Knowledge Moments from Videos</span>
+      <span class="gradient-text">Pause, Rewind, Keep:</span><br>
+      <span class="hero-title-rest">Agents That Collect Knowledge Moments from Videos</span>
     </h1>
     <p class="hero-sub" data-aos="fade-up" data-aos-delay="200">
       Like people, our agents <span class="c-jump">pause</span>
@@ -67,31 +93,41 @@
   <a href="#overview" class="scroll-cue" aria-label="Scroll down"><span></span></a>
 </section>
 
-<!-- Teaser -->
-<section class="sec" id="overview">
-  <div class="container is-max-desktop">
-    <div class="teaser-wrap" data-aos="fade-up" data-aos-duration="900">
-      <div class="teaser-frame">
-        <div class="browser-bar"><i></i><i></i><i></i><span id="teaser-url">youtube.com/watch</span><em class="live"><b></b>agent running</em></div>
-        <video id="teaser-video" autoplay muted loop playsinline preload="auto"></video>
+<!-- Teaser: a clean recording of the agent; timeline, status and counters are drawn live from data/showcase.json -->
+<section class="sec overview" id="overview">
+  <div class="container">
+    <div class="teaser-wrap" id="teaser-wrap">
+      <div class="stage-player teaser-player">
+        <div class="browser-bar"><i></i><i></i><i></i><span id="teaser-url">youtube.com/watch</span><em class="live"><b></b>agent running · <span class="teaser-kept" id="teaser-kept"><b>0</b> moments kept</span></em></div>
+        <div class="stage-frame">
+          <video id="teaser-video" autoplay muted loop playsinline preload="auto"></video>
+          <div class="stage-hud"><span id="teaser-time">0:00</span><b id="teaser-mode">PLAY</b></div>
+        </div>
+        <div class="teaser-lanes">
+          <div class="tl-names"><span class="c-human">People</span><span class="c-agent">Agent</span></div>
+          <div class="tl-area" id="tl-area">
+            <div class="tl-lane" id="lane-human"></div>
+            <div class="tl-lane" id="lane-agent"></div>
+            <div class="tl-play" id="tl-play"></div>
+          </div>
+          <div class="tl-dur" id="tl-dur"></div>
+        </div>
       </div>
     </div>
-    <div class="teaser-tabs" id="teaser-tabs" data-aos="fade-up"></div>
+    <div class="segmented" id="teaser-tabs" data-aos="fade-up"><span class="seg-thumb"></span></div>
     <p class="teaser-caption" data-aos="fade-up">
-      The agent operates a real YouTube player. It <b class="c-jump">skims ahead</b>, <b class="c-back">rewinds</b> to where a new
-      visual begins, and <b class="c-agent">keeps</b> the moments whose frame and subtitles teach the same thing.
-      <span class="c-human">Green</span>: moments people kept · <span class="c-agent">Orange</span>: moments kept by Qwen3.5-27B.
+      A real YouTube player, driven by the agent. It <b class="c-skim">skims</b>, <b class="c-jump">pauses</b>,
+      <b class="c-back">rewinds</b> and <b class="c-agent">keeps</b> — against the moments <b class="c-human">people</b> kept in the same video.
     </p>
-    <div class="stat-grid" id="stat-grid"></div>
+    <div class="spec-row" id="stat-grid"></div>
   </div>
 </section>
 
-<!-- Abstract -->
-<section class="sec">
+<!-- Abstract: words light up as the paragraph scrolls through the viewport -->
+<section class="sec abstract-sec">
   <div class="container is-max-desktop">
     <div class="eyebrow" data-aos="fade-up">Abstract</div>
-    <div class="glass-card abstract" data-aos="fade-up">
-      <p>
+    <p class="scrub" id="abstract">
         Educational videos teach through what they show — a radiograph, a specimen, a map, a painting — explained
         as the video unfolds. A person studying such a video pauses when something is shown, rewinds to where its
         explanation began, and keeps the few moments worth returning to. We ask whether multimodal agents can do the
@@ -104,22 +140,89 @@
         keeps a frame inside 77% of the moments people kept, the weakest 42%; agents had seen almost all the moments
         they missed and lost them afterwards, in judging, verifying, or picking the frame.
       </p>
-    </div>
   </div>
 </section>
 
-<!-- Method -->
-<section class="sec" id="method">
+<!-- Method: scroll-driven walk through one real kept moment (static/js/story.js) -->
+<section class="sec story-sec" id="method">
   <div class="container">
     <div class="eyebrow" data-aos="fade-up">Method</div>
-    <h2 class="sec-title" data-aos="fade-up">Pause, rewind, keep</h2>
-    <p class="sec-lead" data-aos="fade-up">One vision–language model judges the content; deterministic tools do the browsing. Every step runs on the live player — no downloaded video, no transcript API.</p>
-    <div class="pipeline">
-      <div class="pipe-flow" aria-hidden="true"><span></span></div>
-      <div class="pipe-step" data-aos="fade-up" data-aos-delay="0"><div class="pipe-num">01</div><div class="pipe-icon"><i class="fas fa-forward"></i></div><h4>Skim</h4><p>Sweep the timeline forward, jumping further while nothing on screen changes.</p></div>
-      <div class="pipe-step" data-aos="fade-up" data-aos-delay="150"><div class="pipe-num">02</div><div class="pipe-icon"><i class="fas fa-pause"></i></div><h4>Pause</h4><p>Stop on a frame worth keeping, or on a new visual the triage finds worth a look.</p></div>
-      <div class="pipe-step" data-aos="fade-up" data-aos-delay="300"><div class="pipe-num">03</div><div class="pipe-icon"><i class="fas fa-undo"></i></div><h4>Rewind</h4><p>Look back and bisect to where the visual begins, then record until it changes.</p></div>
-      <div class="pipe-step" data-aos="fade-up" data-aos-delay="450"><div class="pipe-num">04</div><div class="pipe-icon"><i class="fas fa-check-double"></i></div><h4>Keep</h4><p>Pick the most informative frame and keep the moment only if its subtitles explain it.</p></div>
+    <h2 class="sec-title" data-aos="fade-up">Skim. Pause. Rewind. Keep.</h2>
+    <p class="sec-lead" data-aos="fade-up">One vision–language model judges the content; deterministic tools do the browsing.
+      Every step runs on the live player — no downloaded video, no transcript API. Scroll to follow one moment the agent kept.</p>
+  </div>
+  <div class="story" id="story">
+    <div class="story-sticky">
+      <div class="story-text">
+        <ol class="story-list">
+          <li class="story-item is-active" style="--c: var(--skim)">
+            <div class="story-item-head"><span class="story-num">01</span><h3>Skim.</h3></div>
+            <div class="story-item-body">
+              <p>Sweep the timeline in growing jumps while nothing on screen changes.</p>
+              <div class="story-live" id="live-0"></div>
+              <div class="story-meta">Rule-based seeks · each new frame compared with the last</div>
+            </div>
+          </li>
+          <li class="story-item" style="--c: var(--jump)">
+            <div class="story-item-head"><span class="story-num">02</span><h3>Pause.</h3></div>
+            <div class="story-item-body">
+              <p>A new visual appears. The model looks at the frame before and after, and decides it is worth a closer look.</p>
+              <div class="story-live" id="live-1"></div>
+              <div class="story-meta">Visual-change triage · two frames</div>
+            </div>
+          </li>
+          <li class="story-item" style="--c: var(--back)">
+            <div class="story-item-head"><span class="story-num">03</span><h3>Rewind.</h3></div>
+            <div class="story-item-body">
+              <p>Bisect back to where the visual begins, then record until it changes again.</p>
+              <div class="story-live" id="live-2"></div>
+              <div class="story-meta">Bisection to a four-second window · then recording</div>
+            </div>
+          </li>
+          <li class="story-item" style="--c: var(--agent)">
+            <div class="story-item-head"><span class="story-num">04</span><h3>Keep.</h3></div>
+            <div class="story-item-body">
+              <p>Choose the frame that shows it best, and keep the moment only if its subtitles explain it.</p>
+              <div class="story-live" id="live-3"></div>
+              <div class="story-meta">Frame selector · subtitle–frame verifier</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div class="story-stage" data-step="0">
+        <div class="stage-player">
+          <div class="browser-bar"><i></i><i></i><i></i><span id="stage-url">youtube.com/watch</span><em class="live"><b></b>agent running</em></div>
+          <div class="stage-frame">
+            <img class="stage-img" alt=""><img class="stage-img" alt="">
+            <div class="stage-hud"><span id="stage-time">0:00</span><b id="stage-mode">SKIM →</b></div>
+            <div class="stage-pick"><i class="fas fa-crosshairs"></i> Frame selector · clearest view of the moment</div>
+          </div>
+          <div class="stage-timeline">
+            <div class="tl-track"></div>
+            <div class="tl-record" id="tl-record"></div>
+            <div class="tl-probes" id="tl-probes"></div>
+            <div class="tl-bracket" id="tl-bracket"></div>
+            <div class="tl-head" id="tl-head"></div>
+            <div class="tl-labels"><span id="tl-start"></span><span id="tl-end"></span></div>
+          </div>
+        </div>
+        <div class="stage-aux">
+          <div class="stage-triage" id="stage-triage">
+            <figure><img id="triage-before" alt=""><figcaption>before</figcaption></figure>
+            <div class="triage-arrow"><i class="fas fa-arrow-right"></i></div>
+            <figure><img id="triage-after" alt=""><figcaption>now</figcaption></figure>
+            <div class="triage-verdict"><i class="fas fa-eye"></i> New visual · worth a closer look</div>
+          </div>
+          <div class="stage-moment" id="stage-moment">
+            <img id="moment-img" alt="">
+            <div class="moment-body">
+              <div class="moment-head"><span class="pair-tag model">knowledge moment</span><span class="pair-time" id="moment-time"></span></div>
+              <div class="moment-text" id="moment-text"></div>
+              <div class="moment-verifier"><i class="fas fa-check-circle"></i><span id="moment-verifier"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -129,9 +232,24 @@
   <div class="container">
     <div class="eyebrow" data-aos="fade-up">Trajectory explorer</div>
     <h2 class="sec-title" data-aos="fade-up">Eight backbones, one video</h2>
-    <p class="sec-lead" data-aos="fade-up">Pick a video and watch every backbone navigate it. Each lane replays the agent's real playhead;
-      hover a dot to see the moment it kept.</p>
+    <p class="sec-lead" data-aos="fade-up">Pick a video and follow how a person and each backbone actually moved through it,
+      then compare where every backbone kept its moments.</p>
     <div class="video-chips" id="video-chips" data-aos="fade-up"></div>
+    <div class="path-card" data-aos="fade-up">
+      <div class="path-head">
+        <div>
+          <div class="path-title">How people and agents move through a video</div>
+          <div class="path-sub">Position in the video over the course of each session: steps up are jumps forward, drops are look-backs.
+            Pick a backbone below to compare.</div>
+        </div>
+        <div class="path-legend">
+          <span><i class="pl-human"></i>People</span><span><i class="pl-agent"></i><b id="path-model">Agent</b></span>
+          <span><i class="pl-back"></i>look-back</span><span><i class="pl-band"></i>moment people kept</span>
+        </div>
+      </div>
+      <div class="path-plot" id="path-plot"></div>
+      <div class="path-stats" id="path-stats"></div>
+    </div>
     <div class="viewer-card glass-card" data-aos="fade-up">
       <div class="viewer-head">
         <div>
@@ -186,11 +304,23 @@
     <h2 class="sec-title" data-aos="fade-up">502 videos, 11 subjects</h2>
     <p class="sec-lead" data-aos="fade-up">Human annotators watched every video with the same player controls and kept the
       moments they found worth returning to.</p>
-    <div class="glass-card" data-aos="fade-up"><div class="subject-bars" id="subject-bars"></div></div>
-    <figure class="paper-figure" data-aos="zoom-in">
-      <img src="static/images/fig_dataset_stats.png" alt="Dataset statistics" loading="lazy">
-      <figcaption>Video length, moments per video and moment length.</figcaption>
-    </figure>
+    <div class="donut-card" id="chart-donut" data-aos="fade-up">
+      <div class="donut-stage">
+        <div class="donut-glow" aria-hidden="true"></div>
+        <div class="donut-shadow" aria-hidden="true"></div>
+        <div class="donut-center"><div class="donut-big">502</div><div class="donut-label">videos</div><div class="donut-sub"></div></div>
+      </div>
+      <div class="donut-legend"></div>
+    </div>
+    <div class="typical" id="typical" data-aos="fade-up">
+      <div class="typical-head">
+        <div><div class="typical-kicker">A typical video</div><div class="typical-title" id="typical-title"></div></div>
+        <button class="typical-replay" id="typical-replay" aria-label="Replay"><i class="fas fa-redo"></i></button>
+      </div>
+      <div class="typical-track" id="typical-track"><div class="typical-play" id="typical-play"></div></div>
+      <div class="typical-scale"><span>0:00</span><span id="typical-note"></span><span id="typical-end"></span></div>
+      <div class="typical-stats" id="typical-stats"></div>
+    </div>
   </div>
 </section>
 
@@ -201,20 +331,55 @@
     <h2 class="sec-title" data-aos="fade-up">How many knowledge moments does each backbone find?</h2>
     <p class="sec-lead" id="results-lead" data-aos="fade-up"></p>
     <div class="glass-card" data-aos="fade-up"><div class="result-bars" id="result-bars"></div></div>
-    <div class="union-card" id="union-card" data-aos="fade-up"></div>
-    <div class="columns is-variable is-5 result-figs">
-      <div class="column" data-aos="fade-up">
-        <figure class="paper-figure">
-          <img src="static/images/fig_complementarity.png?v=5" alt="Complementarity across backbones" loading="lazy">
-          <figcaption id="complementarity-caption"></figcaption>
-        </figure>
+    <div class="union-card" data-aos="fade-up">
+      <div id="union-card"></div>
+      <div class="union-chart" id="chart-k"></div>
+    </div>
+    <div class="glass-card chart-card heat-card" data-aos="fade-up">
+      <div class="chart-title">Moment recall by subject <span>videos per subject under each name</span></div>
+      <div id="chart-heatmap"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Findings (static/js/charts.js) -->
+<section class="sec" id="findings">
+  <div class="container">
+    <div class="eyebrow" data-aos="fade-up">Findings</div>
+    <h2 class="sec-title" data-aos="fade-up">What separates agents from people</h2>
+    <p class="sec-lead" data-aos="fade-up">Every step of every run is logged, so each missed moment can be traced back to where it was lost.</p>
+    <div class="finding" data-aos="fade-up">
+      <div class="finding-text">
+        <div class="finding-num">01</div>
+        <div class="finding-big" id="f1-big"></div>
+        <div class="finding-kicker">of what any backbone keeps lies inside moments people kept</div>
+        <h3>The gap is in discovery, not quality.</h3>
+        <p>Backbones agree on how good the moments they keep are. They differ in how many they find:
+          from <b id="f1-recall"></b> of the reference.</p>
       </div>
-      <div class="column" data-aos="fade-up" data-aos-delay="150">
-        <figure class="paper-figure">
-          <img src="static/images/fig_subject_heatmap.png?v=5" alt="Recall by subject" loading="lazy">
-          <figcaption>Moment recall by subject and backbone.</figcaption>
-        </figure>
+      <div class="finding-chart" id="chart-scatter"></div>
+    </div>
+    <div class="finding is-flipped" data-aos="fade-up">
+      <div class="finding-text">
+        <div class="finding-num">02</div>
+        <div class="finding-big" id="f2-big"></div>
+        <div class="finding-kicker">of missed moments were never on screen</div>
+        <h3>Agents see the moments they miss.</h3>
+        <p>The losses come afterwards — in deciding what is worth keeping, in verification, or in picking the frame —
+          and where they happen depends on the backbone.</p>
       </div>
+      <div class="finding-chart" id="chart-attribution"></div>
+    </div>
+    <div class="finding" data-aos="fade-up">
+      <div class="finding-text">
+        <div class="finding-num">03</div>
+        <div class="finding-big" id="f3-big"></div>
+        <div class="finding-kicker">median moment kept by people, against <b id="f3-agents"></b> for agents</div>
+        <h3>Agents cut finer than people.</h3>
+        <p>Where a person keeps one explanation, an agent often keeps several pieces of it — visual change is not the
+          same as a change in what is being taught.</p>
+      </div>
+      <div class="finding-chart" id="chart-lengths"></div>
     </div>
   </div>
 </section>
