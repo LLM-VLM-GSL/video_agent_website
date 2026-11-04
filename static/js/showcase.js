@@ -510,6 +510,10 @@
       });
       wallEl.appendChild(row);
     }
+    wallEl.querySelectorAll('img').forEach((img) => {
+      const shown = () => img.classList.add('is-loaded');
+      if (img.complete && img.naturalWidth) shown(); else img.addEventListener('load', shown, { once: true });
+    });
   }
 
   // 3D layer on the hero: the wall leans toward the pointer and the agent locks onto moments at the edges.
@@ -618,12 +622,32 @@
     window.addEventListener('mousemove', (e) => { glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`; }, { passive: true });
   }
 
+  // Each video keeps its loading cover until the first frame is ready; a new src (a teaser tab) shows it again.
+  function videoLoader(video) {
+    const cover = video.parentElement.querySelector('.vid-loading');
+    if (!cover) return;
+    const bar = cover.querySelector('.vid-bar b');
+    const done = () => cover.classList.add('is-done');
+    video.addEventListener('loadeddata', done);
+    video.addEventListener('playing', done);
+    video.addEventListener('emptied', () => { cover.classList.remove('is-done'); bar.style.width = '0%'; });
+    video.addEventListener('progress', () => {
+      if (video.duration && video.buffered.length) bar.style.width = `${Math.min(100, (100 * video.buffered.end(video.buffered.length - 1)) / video.duration)}%`;
+    });
+    if (video.readyState >= 2) done();
+  }
+  document.querySelectorAll('video').forEach(videoLoader);
+
+  const status = document.getElementById('hero-status');
   fetch('data/showcase.json?v=13').then((r) => r.json()).then((data) => {
     wall(data); hero3d(); teaser(data); stats(data); benchmark(data); trace(data); viewer(data); gallery(data);
     if (window.PRK) { window.PRK.story && window.PRK.story(data); window.PRK.charts && window.PRK.charts(data); }
     if (window.AOS) AOS.refresh();
-  });
+    status.textContent = 'PRK // AGENT ONLINE';
+  }).catch(() => { status.textContent = 'PRK // DATA OFFLINE'; });
   chrome();
   scrub();
-  window.addEventListener('load', () => window.AOS && AOS.init({ duration: 800, once: true, offset: 60, easing: 'ease-out-cubic' }));
+  // Start the reveal animations now; waiting for window load kept the page dark until every image had arrived.
+  if (window.AOS) AOS.init({ duration: 800, once: true, offset: 60, easing: 'ease-out-cubic' });
+  window.addEventListener('load', () => window.AOS && AOS.refresh());
 })();

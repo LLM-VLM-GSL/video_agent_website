@@ -18,14 +18,14 @@
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
-  <link rel="stylesheet" href="static/css/showcase.css?v=22">
+  <link rel="stylesheet" href="static/css/showcase.css?v=24">
   <script defer src="static/js/fontawesome.all.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script defer src="static/js/index.js?v=4"></script>
   <script defer src="static/js/story.js?v=4"></script>
   <script defer src="static/js/charts.js?v=7"></script>
-  <script defer src="static/js/showcase.js?v=16"></script>
+  <script defer src="static/js/showcase.js?v=18"></script>
   <script defer src="static/js/snap.js?v=2"></script>
 </head>
 <body>
@@ -61,22 +61,22 @@
   <div class="hero-scan" aria-hidden="true"></div>
   <div class="hero-frame" aria-hidden="true">
     <b></b><b></b><b></b><b></b>
-    <span class="tl">PRK // AGENT ONLINE</span>
+    <span class="tl" id="hero-status">PRK // LOADING MOMENTS<em>_</em></span>
     <span class="tr"><em>●</em> REC · 2× PLAYBACK</span>
     <span class="bl">MOMENTS KEPT <strong id="hero-kept">0000</strong></span>
     <span class="br" id="hero-clock">T+00:00:00</span>
   </div>
   <div class="hero-content">
-    <h1 class="hero-title" data-aos="zoom-out" data-aos-duration="1000">
+    <h1 class="hero-title hero-in">
       <span class="gradient-text">Pause, Rewind, Keep:</span><br>
       <span class="hero-title-rest">Agents That Collect Knowledge Moments from Videos</span>
     </h1>
-    <p class="hero-sub" data-aos="fade-up" data-aos-delay="200">
+    <p class="hero-sub hero-in" style="--d: 0.15s">
       Like people, our agents <span class="c-jump">pause</span>
       on what is shown, <span class="c-back">rewind</span> to where its explanation began, and <span class="c-agent">keep</span> the moments worth returning to.
     </p>
-    <div class="hero-authors" data-aos="fade-up" data-aos-delay="300">Anonymous Authors</div>
-    <div class="publication-links" data-aos="fade-up" data-aos-delay="400">
+    <div class="hero-authors hero-in" style="--d: 0.25s">Anonymous Authors</div>
+    <div class="publication-links hero-in" style="--d: 0.35s">
       <a href="#" class="btn-glow"><i class="fas fa-file-pdf"></i>Paper</a>
       <a href="#" class="btn-glass"><i class="fab fa-github"></i>Code</a>
       <a href="#benchmark" class="btn-glass"><i class="fas fa-database"></i>Benchmark</a>
@@ -94,6 +94,7 @@
         <div class="browser-bar"><i></i><i></i><i></i><span id="teaser-url">youtube.com/watch</span><em class="live"><b></b>agent running · <span class="teaser-kept" id="teaser-kept"><b>0</b> moments kept</span></em></div>
         <div class="stage-frame">
           <video id="teaser-video" autoplay muted loop playsinline preload="auto"></video>
+          <div class="vid-loading" aria-hidden="true"><i class="vid-scan"></i><span class="vid-label">LOADING RECORDING<em>_</em></span><span class="vid-bar"><b></b></span></div>
           <div class="stage-hud"><span id="teaser-time">0:00</span><b id="teaser-mode">PLAY</b></div>
         </div>
         <div class="teaser-lanes">
@@ -286,7 +287,10 @@
     <div class="labeler-layout">
       <div class="browser-mock" data-aos="fade-right" data-aos-duration="900">
         <div class="browser-bar"><i></i><i></i><i></i><span>YouTube Moment Labeler</span></div>
-        <video autoplay muted loop playsinline poster="assets/labeler/labeler_full.jpg" src="assets/labeler/labeler_demo.mp4"></video>
+        <div class="vid-box">
+          <video autoplay muted loop playsinline poster="assets/labeler/labeler_full.jpg" src="assets/labeler/labeler_demo.mp4"></video>
+          <div class="vid-loading" aria-hidden="true"><i class="vid-scan"></i><span class="vid-label">LOADING RECORDING<em>_</em></span><span class="vid-bar"><b></b></span></div>
+        </div>
       </div>
       <div class="labeler-features">
         <div class="feature" data-aos="fade-left" data-aos-delay="0"><div class="feature-icon"><i class="fas fa-forward"></i></div>
