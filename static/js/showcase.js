@@ -87,7 +87,7 @@
       clip = t; last = -1;
       video.src = t.mp4;
       video.play().catch(() => {});
-      document.getElementById('teaser-url').textContent = `youtube.com/watch?v=${t.id}`;
+      document.getElementById('teaser-url').textContent = `${t.category} lecture`;
       document.getElementById('tl-dur').textContent = fmt(t.duration);
       human.innerHTML = ''; agent.innerHTML = '';
       (t.human || []).forEach((h) => block(human, h, t.duration));
@@ -208,7 +208,7 @@
       // Lane width in real pixels so dots stay round (viewBox matches the rendered size).
       const W = Math.max(200, Math.round(lanes.getBoundingClientRect().width - (window.innerWidth <= 768 ? 158 : 238)));
       const x = (t) => (W * Math.max(0, Math.min(t, v.duration))) / v.duration;
-      document.getElementById('viewer-title').innerHTML = `<a href="${v.url}" target="_blank">${escape(v.title.replace(/ - YouTube$/, ''))}</a>`;
+      document.getElementById('viewer-title').textContent = v.title;
       document.getElementById('viewer-meta').textContent = `${v.category} · ${fmt(v.duration)} · ${v.human.length} human targets`;
       lanes.innerHTML = '';
       lanes.appendChild(el('div', { class: 'lane lane-header' }, '<div></div><div></div><div class="lane-score">found</div>'));
@@ -320,7 +320,7 @@
       current = v;
       cancelAnimationFrame(anim);
       const m = v.model;
-      document.getElementById('trace-title').innerHTML = `<a href="${v.url}" target="_blank">${escape(v.title.replace(/ - YouTube$/, ''))}</a>`;
+      document.getElementById('trace-title').textContent = v.title;
       document.getElementById('trace-meta').textContent = `${v.category} · ${fmt(v.duration)} · both sessions replayed in ${D / 1000} s`;
       root.innerHTML = '';
       const W = Math.max(320, Math.round(root.getBoundingClientRect().width)), H = 150, Y = 75;
@@ -456,7 +456,7 @@
       body.innerHTML = `<img src="${p.img}" alt=""><div class="lb-text">
         <span class="pair-tag model">${escape(model)}</span><span class="pair-tag hit">matches a person</span>
         <span class="pair-time">${fmt(p.s)}–${fmt(p.e)}</span>
-        <h4><a href="${v.url}&t=${Math.floor(p.s)}s" target="_blank">${escape(v.title.replace(/ - YouTube$/, ''))}</a></h4>
+        <h4>${escape(v.title)}</h4>
         <div>${escape(clean(p.text))}…</div>
         ${p.verifier ? `<div class="lb-quote">Verifier: “${escape(p.verifier)}”</div>` : ''}</div>`;
       box.classList.add('is-open');

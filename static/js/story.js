@@ -44,7 +44,7 @@ window.PRK.story = function (data) {
   const W0 = Math.max(0, A - 20), W1 = Math.min(video.duration, Math.max(e, L) + 30);
   const X = (t) => `${(100 * (clamp(t, W0, W1) - W0)) / (W1 - W0)}%`;
 
-  $('stage-url').textContent = `youtube.com/watch?v=${video.id}`;
+  $('stage-url').textContent = `${video.category} lecture`;
   $('tl-start').textContent = fmt(W0);
   $('tl-end').textContent = fmt(W1);
   const probes = $('tl-probes');
