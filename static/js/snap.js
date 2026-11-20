@@ -21,14 +21,24 @@
     const out = [];
     sections().forEach((sec) => {
       const y = top(sec), h = sec.offsetHeight;
-      out.push(y);
       const story = sec.querySelector('#story');
       if (story) {
+        out.push(y);
         const st = top(story), span = story.offsetHeight - vh;
         for (let k = 0; k < 4; k++) out.push(st + (span * (k + 0.5)) / 4);
         out.push(st + span);
         return;
       }
+      // A section split into .screen blocks stops once per block, with the block centred below the nav.
+      const screens = [...sec.querySelectorAll('.screen')];
+      if (screens.length) {
+        screens.forEach((s) => {
+          const sh = s.offsetHeight;
+          out.push(sh > vh - 90 ? top(s) - 76 : top(s) + sh / 2 - (vh + 60) / 2);
+        });
+        return;
+      }
+      out.push(y);
       for (let p = y + vh * 0.85; p < y + h - vh * 0.6; p += vh * 0.85) out.push(p);
     });
     out.push(document.documentElement.scrollHeight - vh);

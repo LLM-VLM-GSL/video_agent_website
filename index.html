@@ -3,44 +3,58 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- TODO: fill title/description/links after the review period; keep anonymous while under double-blind review. -->
-  <title>Pause, Rewind, Keep: Agents That Collect Knowledge Moments from Videos</title>
-  <meta name="description" content="An agent that studies a video the way people do: it pauses on what is shown, rewinds to where the explanation began, and keeps the knowledge moments worth returning to.">
+  <title>LEAF: Anchoring Visual Knowledge in Videos as People Do</title>
+  <meta name="description" content="LEAF is an agent harness that collects visual knowledge anchors from videos by browsing them in a real player: it skims, pauses at informative visuals, rewinds to where they begin, and keeps the anchors whose subtitles explain them.">
   <meta name="theme-color" content="#070a12">
-  <link rel="icon" type="image/png" sizes="32x32" href="static/images/favicon-32.png?v=3">
-  <link rel="icon" type="image/png" sizes="96x96" href="static/images/favicon-96.png?v=3">
-  <link rel="icon" type="image/svg+xml" href="static/images/favicon.svg?v=3">
-  <link rel="shortcut icon" href="static/images/favicon.ico?v=3">
-  <link rel="apple-touch-icon" href="static/images/apple-touch-icon.png?v=3">
+  <link rel="icon" type="image/png" sizes="32x32" href="static/images/favicon-32.png?v=4">
+  <link rel="icon" type="image/png" sizes="96x96" href="static/images/favicon-96.png?v=4">
+  <link rel="icon" type="image/svg+xml" href="static/images/favicon.svg?v=4">
+  <link rel="shortcut icon" href="static/images/favicon.ico?v=4">
+  <link rel="apple-touch-icon" href="static/images/apple-touch-icon.png?v=4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <!-- Data chunks from scripts/build_site.py; core and teasers start downloading with the page. -->
   <!-- data-version:start -->
-  <meta name="prk-data" content="540135389e">
-  <link rel="preload" href="data/core.json?v=540135389e" as="fetch" crossorigin>
-  <link rel="preload" href="data/teasers.json?v=540135389e" as="fetch" crossorigin>
+  <meta name="prk-data" content="e214f166f7">
+  <link rel="preload" href="data/core.json?v=e214f166f7" as="fetch" crossorigin>
+  <link rel="preload" href="data/teasers.json?v=e214f166f7" as="fetch" crossorigin>
   <!-- data-version:end -->
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
-  <link rel="stylesheet" href="static/css/showcase.css?v=25">
+  <link rel="stylesheet" href="static/css/showcase.css?v=30">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script defer src="static/js/index.js?v=4"></script>
-  <script defer src="static/js/story.js?v=4"></script>
-  <script defer src="static/js/charts.js?v=7"></script>
-  <script defer src="static/js/showcase.js?v=19"></script>
-  <script defer src="static/js/snap.js?v=2"></script>
+  <script defer src="static/js/story.js?v=5"></script>
+  <script defer src="static/js/charts.js?v=9"></script>
+  <script defer src="static/js/showcase.js?v=23"></script>
+  <script defer src="static/js/snap.js?v=3"></script>
   <!-- Icons last: the 1.2 MB icon script would otherwise hold back the page scripts that load the data. -->
   <script defer src="static/js/fontawesome.all.min.js"></script>
 </head>
 <body>
 
+<!-- LEAF mark: a leaf whose midrib is a timeline and whose nodes are kept anchors. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="leaf-grad" x1="8" y1="56" x2="56" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4ade80"/><stop offset="0.45" stop-color="#2dd4bf"/><stop offset="0.75" stop-color="#38bdf8"/><stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+    <symbol id="leaf-symbol" viewBox="0 0 64 64">
+      <path d="M10 54C10 28 26 10 56 8c-1 30-18 46-46 46z" fill="url(#leaf-grad)" fill-opacity="0.16" stroke="url(#leaf-grad)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M10 54L46 18" stroke="url(#leaf-grad)" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M20 44l-1-12M20 44l12 1M29 35l-1-12M29 35l12 1M38 26l-1-10M38 26l10 1" stroke="url(#leaf-grad)" stroke-width="2" stroke-linecap="round" stroke-opacity="0.75" fill="none"/>
+      <circle cx="20" cy="44" r="3.4" fill="#fb923c"/><circle cx="29" cy="35" r="3.4" fill="#fb923c"/><circle cx="38" cy="26" r="3.4" fill="#fb923c"/>
+    </symbol>
+  </defs>
+</svg>
+
 <div class="cursor-glow" id="cursor-glow"></div>
 
 <nav class="topnav" id="topnav">
-  <a href="#top" class="topnav-brand"><span class="brand-dot"></span>Pause · Rewind · Keep</a>
+  <a href="#top" class="topnav-brand"><svg class="leaf-mark is-small" viewBox="0 0 64 64" aria-hidden="true"><use href="#leaf-symbol"/></svg><span class="brand-word-sm">LEAF</span></a>
   <div class="topnav-links">
     <a href="#overview">Overview</a>
     <a href="#method">Method</a>
@@ -60,7 +74,7 @@
 
 <main id="main-content">
 
-<!-- Hero: a scrolling wall of real collected moments behind the title -->
+<!-- Hero: a scrolling wall of real collected anchors behind the title -->
 <section class="hero-stage hero-3d" id="top">
   <div class="pair-wall" id="pair-wall" aria-hidden="true">
     <!-- hero-wall:start -->
@@ -76,19 +90,28 @@
   <div class="hero-scan" aria-hidden="true"></div>
   <div class="hero-frame" aria-hidden="true">
     <b></b><b></b><b></b><b></b>
-    <span class="tl" id="hero-status">PRK // LOADING MOMENTS<em>_</em></span>
-    <span class="tr"><em>●</em> REC · 2× PLAYBACK</span>
-    <span class="bl">MOMENTS KEPT <strong id="hero-kept">0000</strong></span>
+    <span class="tl" id="hero-status">LEAF // LOADING ANCHORS<em>_</em></span>
+    <span class="tr"><em>●</em> REC</span>
+    <span class="bl">ANCHORS KEPT <strong id="hero-kept">0000</strong></span>
     <span class="br" id="hero-clock">T+00:00:00</span>
   </div>
   <div class="hero-content">
     <h1 class="hero-title hero-in">
-      <span class="gradient-text">Pause, Rewind, Keep:</span><br>
-      <span class="hero-title-rest">Agents That Collect Knowledge Moments from Videos</span>
+      <span class="brand-row">
+        <svg class="leaf-mark is-hero" viewBox="0 0 64 64" aria-hidden="true">
+          <path class="leaf-blade" d="M10 54C10 28 26 10 56 8c-1 30-18 46-46 46z" fill="url(#leaf-grad)" fill-opacity="0.16" stroke="url(#leaf-grad)" stroke-width="3" stroke-linejoin="round"/>
+          <path class="leaf-rib" d="M10 54L46 18" stroke="url(#leaf-grad)" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path class="leaf-vein" d="M20 44l-1-12M20 44l12 1M29 35l-1-12M29 35l12 1M38 26l-1-10M38 26l10 1" stroke="url(#leaf-grad)" stroke-width="2" stroke-linecap="round" stroke-opacity="0.75" fill="none"/>
+          <circle class="leaf-anchor" cx="20" cy="44" r="3.4" fill="#fb923c"/><circle class="leaf-anchor" cx="29" cy="35" r="3.4" fill="#fb923c"/><circle class="leaf-anchor" cx="38" cy="26" r="3.4" fill="#fb923c"/>
+        </svg>
+        <span class="brand-word">LEAF</span>
+      </span>
+      <span class="hero-title-rest">Anchoring Visual Knowledge in Videos as People Do</span>
     </h1>
+    <div class="brand-acronym hero-in" style="--d: 0.1s"><b class="c-skim">L</b>ecture <b class="c-jump">E</b>xplorer for <b class="c-back">A</b>nchor <b class="c-agent">F</b>inding</div>
     <p class="hero-sub hero-in" style="--d: 0.15s">
-      Like people, our agents <span class="c-jump">pause</span>
-      on what is shown, <span class="c-back">rewind</span> to where its explanation began, and <span class="c-agent">keep</span> the moments worth returning to.
+      LEAF skims a video, <span class="c-jump">pauses</span> at informative visuals, <span class="c-back">rewinds</span>
+      to find where they begin, and <span class="c-agent">keeps</span> the anchors whose subtitles explain them.
     </p>
     <div class="hero-authors hero-in" style="--d: 0.25s">Anonymous Authors</div>
     <div class="publication-links hero-in" style="--d: 0.35s">
@@ -104,9 +127,10 @@
 <!-- Teaser: a clean recording of the agent; timeline, status and counters are drawn live from data/teasers.json -->
 <section class="sec overview" id="overview">
   <div class="container">
+    <div class="screen">
     <div class="teaser-wrap" id="teaser-wrap">
       <div class="stage-player teaser-player">
-        <div class="browser-bar"><i></i><i></i><i></i><span id="teaser-url">lecture player</span><em class="live"><b></b>agent running · <span class="teaser-kept" id="teaser-kept"><b>0</b> moments kept</span></em></div>
+        <div class="browser-bar"><i></i><i></i><i></i><span id="teaser-url">lecture player</span><em class="live"><b></b>agent running · <span class="teaser-kept" id="teaser-kept"><b>0</b> anchors kept</span></em></div>
         <div class="stage-frame">
           <video id="teaser-video" autoplay muted loop playsinline preload="auto"></video>
           <div class="vid-loading" aria-hidden="true"><i class="vid-scan"></i><span class="vid-label">LOADING RECORDING<em>_</em></span><span class="vid-bar"><b></b></span></div>
@@ -126,39 +150,33 @@
     <div class="segmented" id="teaser-tabs" data-aos="fade-up"><span class="seg-thumb"></span></div>
     <p class="teaser-caption" data-aos="fade-up">
       A real web video player, driven by the agent. It <b class="c-skim">skims</b>, <b class="c-jump">pauses</b>,
-      <b class="c-back">rewinds</b> and <b class="c-agent">keeps</b> — against the moments <b class="c-human">people</b> kept in the same video.
+      <b class="c-back">rewinds</b> and <b class="c-agent">keeps</b> anchors, shown with the anchors <b class="c-human">people</b> kept in the same video.
     </p>
-    <div class="spec-row" id="stat-grid"></div>
+    </div>
   </div>
 </section>
 
 <!-- Abstract: words light up as the paragraph scrolls through the viewport -->
 <section class="sec abstract-sec">
   <div class="container is-max-desktop">
+    <div class="screen">
+    <div class="spec-row" id="stat-grid"></div>
     <div class="eyebrow" data-aos="fade-up">Abstract</div>
     <p class="scrub" id="abstract">
-        Educational videos teach through what they show — a radiograph, a specimen, a map, a painting — explained
-        as the video unfolds. A person studying such a video pauses when something is shown, rewinds to where its
-        explanation began, and keeps the few moments worth returning to. We ask whether multimodal agents can do the
-        same. We define <b>active, evidence-grounded visual knowledge collection</b>: an agent operates a real video
-        player and collects <b>knowledge moments</b> — intervals of a video, each kept with a clean frame of what it
-        shows and the subtitles that explain it. Our agent goes from a topic to such moments: it searches, chooses
-        videos, and on each video pauses, rewinds, and keeps, with one vision–language model making every judgment
-        about content. We build a benchmark of <b>502 videos</b> from <b>11 subjects</b> in which annotators kept the
-        moments they found worth keeping, and compare eight open backbones against these references. The best agent
-        keeps a frame inside 77% of the moments people kept, the weakest 42%; agents had seen almost all the moments
-        they missed and lost them afterwards, in judging, verifying, or picking the frame.
+        Videos are widely used to communicate expert knowledge across specialized domains. This knowledge is often conveyed through visual knowledge anchors, which are temporally localized instructional units that pair informative visuals with their spoken explanations. Existing methods collect these anchors through fixed pipelines without understanding the visual content. As a result, they need additional semantic post-processing and domain-specific tuning. GUI agents offer a promising alternative, as they use VLMs to understand visual content and interact with video players through the same interfaces people use. Most existing video agents answer predefined questions or complete downstream tasks. Their evaluations focus on final results and reveal little about how they collect visual knowledge anchors from educational videos. To address this gap, we propose <b>LEAF</b> (<b>L</b>ecture <b>E</b>xplorer for <b>A</b>nchor <b>F</b>inding), an agent harness for collecting visual knowledge anchors through interactive video browsing. It skims the video, pauses at informative visuals, and rewinds to find where they begin. It then checks that the subtitles explain the visual content before saving the anchor. To compare agents with people, we introduce <b>LEAF-Bench</b>, which pairs 502 lecture videos spanning 81.9 hours and eleven subjects with 4,779 human reference anchors and 41,294 human browsing actions collected through the same player interface. Across fifteen VLM backbones evaluated on LEAF-Bench, anchor recall ranges from only 42.1% to 77.1%, despite observation rates of 97.6% to 99.5% in our trajectory analysis. Most missed anchors are discarded after observation, either during content evaluation or when verifying alignment between visuals and narration. Agents also produce shorter and more fragmented anchors than people. Within model families, larger backbones generally narrow these gaps. These findings identify instructional-value judgment, visual-narration alignment, and the preservation of complete explanatory units as key directions for advancing GUI agents in visual knowledge anchor collection.
       </p>
+    </div>
   </div>
 </section>
 
-<!-- Method: scroll-driven walk through one real kept moment (static/js/story.js) -->
+<!-- Method: scroll-driven walk through one real kept anchor (static/js/story.js) -->
 <section class="sec story-sec" id="method">
   <div class="container">
     <div class="eyebrow" data-aos="fade-up">Method</div>
     <h2 class="sec-title" data-aos="fade-up">Skim. Pause. Rewind. Keep.</h2>
-    <p class="sec-lead" data-aos="fade-up">One vision–language model judges the content; deterministic tools do the browsing.
-      Every step runs on the live player — no downloaded video, no transcript API. Scroll to follow one moment the agent kept.</p>
+    <p class="sec-lead" data-aos="fade-up">LEAF is an agent harness of five modules. The kernel sees and acts on the player,
+      procedural skills skim, rewind and record, the behavioral state machine decides what runs next, autonomic fallbacks recover
+      from failures, and the executive planner asks one vision–language model four kinds of questions. Scroll to follow one anchor the agent kept.</p>
   </div>
   <div class="story" id="story">
     <div class="story-sticky">
@@ -167,33 +185,33 @@
           <li class="story-item is-active" style="--c: var(--skim)">
             <div class="story-item-head"><span class="story-num">01</span><h3>Skim.</h3></div>
             <div class="story-item-body">
-              <p>Sweep the timeline in growing jumps while nothing on screen changes.</p>
+              <p>Jump forward through the video while the picture stays the same.</p>
               <div class="story-live" id="live-0"></div>
-              <div class="story-meta">Rule-based seeks · each new frame compared with the last</div>
+              <div class="story-meta">Procedural skills · frame-change signals</div>
             </div>
           </li>
           <li class="story-item" style="--c: var(--jump)">
             <div class="story-item-head"><span class="story-num">02</span><h3>Pause.</h3></div>
             <div class="story-item-body">
-              <p>A new visual appears. The model looks at the frame before and after, and decides it is worth a closer look.</p>
+              <p>A new visual appears. The content evaluator decides that it is worth a closer look.</p>
               <div class="story-live" id="live-1"></div>
-              <div class="story-meta">Visual-change triage · two frames</div>
+              <div class="story-meta">Executive planner · content evaluator</div>
             </div>
           </li>
           <li class="story-item" style="--c: var(--back)">
             <div class="story-item-head"><span class="story-num">03</span><h3>Rewind.</h3></div>
             <div class="story-item-body">
-              <p>Bisect back to where the visual begins, then record until it changes again.</p>
+              <p>Bisect back to where the visual begins, then record until its explanation ends.</p>
               <div class="story-live" id="live-2"></div>
-              <div class="story-meta">Bisection to a four-second window · then recording</div>
+              <div class="story-meta">Rewinding by bisection · recording · change triage</div>
             </div>
           </li>
           <li class="story-item" style="--c: var(--agent)">
             <div class="story-item-head"><span class="story-num">04</span><h3>Keep.</h3></div>
             <div class="story-item-body">
-              <p>Choose the frame that shows it best, and keep the moment only if its subtitles explain it.</p>
+              <p>Choose the frame that shows it best, and keep the anchor only if its subtitles explain it.</p>
               <div class="story-live" id="live-3"></div>
-              <div class="story-meta">Frame selector · subtitle–frame verifier</div>
+              <div class="story-meta">Frame selector · verifier</div>
             </div>
           </li>
         </ol>
@@ -204,7 +222,7 @@
           <div class="stage-frame">
             <img class="stage-img" alt=""><img class="stage-img" alt="">
             <div class="stage-hud"><span id="stage-time">0:00</span><b id="stage-mode">SKIM →</b></div>
-            <div class="stage-pick"><i class="fas fa-crosshairs"></i> Frame selector · clearest view of the moment</div>
+            <div class="stage-pick"><i class="fas fa-crosshairs"></i> Frame selector · clearest view of the anchor</div>
           </div>
           <div class="stage-timeline">
             <div class="tl-track"></div>
@@ -225,7 +243,7 @@
           <div class="stage-moment" id="stage-moment">
             <img id="moment-img" alt="">
             <div class="moment-body">
-              <div class="moment-head"><span class="pair-tag model">knowledge moment</span><span class="pair-time" id="moment-time"></span></div>
+              <div class="moment-head"><span class="pair-tag model">visual knowledge anchor</span><span class="pair-time" id="moment-time"></span></div>
               <div class="moment-text" id="moment-text"></div>
               <div class="moment-verifier"><i class="fas fa-check-circle"></i><span id="moment-verifier"></span></div>
             </div>
@@ -242,7 +260,7 @@
     <div class="eyebrow" data-aos="fade-up">Trajectory</div>
     <h2 class="sec-title" data-aos="fade-up">Watch how it watches</h2>
     <p class="sec-lead" data-aos="fade-up">Each bar is the whole video and the dot is where the viewer is.
-      Arcs above are jumps forward, arcs below are look-backs, and the blocks that light up are the moments each one kept.</p>
+      Arcs above are jumps forward, arcs below are look-backs, and the blocks that light up are the anchors each one kept.</p>
     <div class="video-chips" id="trace-chips" data-aos="fade-up"></div>
     <div class="trace-card glass-card" data-aos="fade-up">
       <div class="viewer-head">
@@ -257,8 +275,8 @@
         <span><i class="sw sw-jump"></i>jump forward</span>
         <span><i class="sw sw-back"></i>look back</span>
         <span><i class="sw sw-seen"></i>played</span>
-        <span><i class="sw sw-human"></i>moment a person kept</span>
-        <span><i class="sw sw-agent"></i>moment the agent kept</span>
+        <span><i class="sw sw-human"></i>anchor a person kept</span>
+        <span><i class="sw sw-agent"></i>anchor the agent kept</span>
       </div>
     </div>
   </div>
@@ -266,10 +284,11 @@
 
 <section class="sec" id="viewer">
   <div class="container">
+    <div class="screen">
     <div class="eyebrow" data-aos="fade-up">Baselines</div>
-    <h2 class="sec-title" data-aos="fade-up">Eight backbones, one video</h2>
-    <p class="sec-lead" data-aos="fade-up">Every backbone ran on the same video. Each row shows the segments it recorded and the frames it kept;
-      hover a frame to read it. On the right: how many of the moments people kept that backbone also found.</p>
+    <h2 class="sec-title" data-aos="fade-up">Fifteen backbones, one video</h2>
+    <p class="sec-lead is-tight" data-aos="fade-up">Each row is one backbone on the same video: the segments it recorded, the frames it kept,
+      and how many reference anchors it found. Hover a frame to read it.</p>
     <div class="video-chips" id="video-chips" data-aos="fade-up"></div>
     <div class="viewer-card glass-card" data-aos="fade-up">
       <div class="viewer-head">
@@ -281,13 +300,17 @@
       </div>
       <div class="lanes" id="lanes"></div>
       <div class="legend">
-        <span><i class="sw sw-human"></i>human target (brighter = found by more models)</span>
+        <span><i class="sw sw-human"></i>reference anchor (brighter = found by more backbones)</span>
         <span><i class="sw sw-agent"></i>agent segment</span>
-        <span><i class="sw sw-hit"></i>kept frame inside a moment people kept</span>
+        <span><i class="sw sw-hit"></i>kept frame inside a reference anchor</span>
         <span><i class="sw sw-miss"></i>kept frame outside</span>
       </div>
     </div>
-    <div class="pair-strip" id="pair-strip"></div>
+    </div>
+    <div class="screen screen-strip">
+      <div class="strip-head">Frames kept by <b id="strip-model"></b> · click a name above to switch</div>
+      <div class="pair-strip" id="pair-strip"></div>
+    </div>
     <div class="tooltip-card" id="tooltip"></div>
   </div>
 </section>
@@ -295,6 +318,7 @@
 <!-- Labeler -->
 <section class="sec labeler-section" id="labeler">
   <div class="container">
+    <div class="screen">
     <div class="eyebrow" data-aos="fade-up">Human annotation</div>
     <h2 class="sec-title" data-aos="fade-up">A labeler that records <span class="gradient-text">how</span> people watch</h2>
     <p class="sec-lead" data-aos="fade-up">Annotators use the same player actions as the agent. Every skim, look-back and
@@ -311,12 +335,34 @@
         <div class="feature" data-aos="fade-left" data-aos-delay="0"><div class="feature-icon"><i class="fas fa-forward"></i></div>
           <div><h4>Skim &amp; inspect</h4><p>Jump ahead in fixed steps, then record whether the new visual is worth a closer look.</p></div></div>
         <div class="feature" data-aos="fade-left" data-aos-delay="120"><div class="feature-icon"><i class="fas fa-arrows-alt-h"></i></div>
-          <div><h4>Moment intervals</h4><p>Mark start and end, choose a representative frame, and judge whether the subtitles explain it.</p></div></div>
+          <div><h4>Anchor intervals</h4><p>Mark start and end, choose a representative frame, and judge whether the subtitles explain it.</p></div></div>
         <div class="feature" data-aos="fade-left" data-aos-delay="240"><div class="feature-icon"><i class="fas fa-history"></i></div>
           <div><h4>Full trajectory log</h4><p>Play, pause, seeks and decisions are timestamped and editable, giving a human reference for agent behavior.</p></div></div>
         <div class="feature" data-aos="fade-left" data-aos-delay="360"><div class="feature-icon"><i class="fas fa-users"></i></div>
           <div><h4>Shared, conflict-free</h4><p>Several annotators work on one label file; each video is saved independently.</p></div></div>
       </div>
+    </div>
+    </div>
+    <div class="screen">
+    <h3 class="screen-title" data-aos="fade-up">And one for choosing <span class="gradient-text">which</span> videos to watch</h3>
+    <p class="sec-lead is-tight" data-aos="fade-up">For each topic, annotators read the same saved search results as the agent,
+      one screen at a time, and pick the videos they would open to collect anchors.</p>
+    <div class="labeler-layout">
+      <div class="browser-mock" data-aos="fade-right" data-aos-duration="900">
+        <div class="browser-bar"><i></i><i></i><i></i><span>Retrieval Labeler</span></div>
+        <div class="vid-box"><img src="assets/labeler/retrieval_labeler.jpg?v=20261119" alt="The video-selection labeling tool" loading="lazy"></div>
+      </div>
+      <div class="labeler-features">
+        <div class="feature" data-aos="fade-left" data-aos-delay="0"><div class="feature-icon"><i class="fas fa-search"></i></div>
+          <div><h4>Same results as the agent</h4><p>Each topic is searched once, and people and every backbone choose from the same saved list.</p></div></div>
+        <div class="feature" data-aos="fade-left" data-aos-delay="120"><div class="feature-icon"><i class="fas fa-sort-numeric-down"></i></div>
+          <div><h4>Choices in order</h4><p>A click chooses a video and a second click removes it; the order of the choices is kept.</p></div></div>
+        <div class="feature" data-aos="fade-left" data-aos-delay="240"><div class="feature-icon"><i class="fas fa-lock"></i></div>
+          <div><h4>One page at a time</h4><p>Moving on closes the page, so earlier choices stay fixed, and a page may pass with no choice.</p></div></div>
+        <div class="feature" data-aos="fade-left" data-aos-delay="360"><div class="feature-icon"><i class="fas fa-mouse-pointer"></i></div>
+          <div><h4>Every click and scroll</h4><p>Choices, time per page and each scroll that brings new results on screen are logged.</p></div></div>
+      </div>
+    </div>
     </div>
   </div>
 </section>
@@ -324,10 +370,11 @@
 <!-- Benchmark -->
 <section class="sec" id="benchmark">
   <div class="container is-max-desktop">
+    <div class="screen">
     <div class="eyebrow" data-aos="fade-up">Benchmark</div>
-    <h2 class="sec-title" data-aos="fade-up">502 videos, 11 subjects</h2>
-    <p class="sec-lead" data-aos="fade-up">Human annotators watched every video with the same player controls and kept the
-      moments they found worth returning to.</p>
+    <h2 class="sec-title" data-aos="fade-up"><span class="brand-ink">LEAF-Bench</span>: 502 videos, 11 subjects</h2>
+    <p class="sec-lead" data-aos="fade-up">Annotators browsed every video in the same player as the agent and kept the anchors
+      they found worth returning to. Each video comes with its reference anchors and the full browsing trajectory behind them.</p>
     <div class="donut-card" id="chart-donut" data-aos="fade-up">
       <div class="donut-stage">
         <div class="donut-glow" aria-hidden="true"></div>
@@ -336,6 +383,8 @@
       </div>
       <div class="donut-legend"></div>
     </div>
+    </div>
+    <div class="screen">
     <div class="typical" id="typical" data-aos="fade-up">
       <div class="typical-head">
         <div><div class="typical-kicker">A typical video</div><div class="typical-title" id="typical-title"></div></div>
@@ -345,23 +394,23 @@
       <div class="typical-scale"><span>0:00</span><span id="typical-note"></span><span id="typical-end"></span></div>
       <div class="typical-stats" id="typical-stats"></div>
     </div>
+    </div>
   </div>
 </section>
 
 <!-- Results -->
 <section class="sec" id="results">
   <div class="container is-max-desktop">
-    <div class="eyebrow" data-aos="fade-up">Results</div>
-    <h2 class="sec-title" data-aos="fade-up">How many knowledge moments does each backbone find?</h2>
-    <p class="sec-lead" id="results-lead" data-aos="fade-up"></p>
-    <div class="glass-card" data-aos="fade-up"><div class="result-bars" id="result-bars"></div></div>
-    <div class="union-card" data-aos="fade-up">
-      <div id="union-card"></div>
-      <div class="union-chart" id="chart-k"></div>
+    <div class="screen">
+      <div class="eyebrow" data-aos="fade-up">Results</div>
+      <h2 class="sec-title" data-aos="fade-up">How many anchors does each backbone find?</h2>
+      <p class="sec-lead is-tight" id="results-lead" data-aos="fade-up"></p>
+      <div class="glass-card ar-card" data-aos="fade-up"><div class="ar-columns" id="result-bars"></div></div>
     </div>
-    <div class="glass-card chart-card heat-card" data-aos="fade-up">
-      <div class="chart-title">Moment recall by subject <span>videos per subject under each name</span></div>
-      <div id="chart-heatmap"></div>
+    <div class="screen">
+      <h3 class="screen-title" data-aos="fade-up">Anchor recall across eleven subjects</h3>
+      <p class="sec-lead is-tight" data-aos="fade-up">Each dot is one backbone on one subject; the ranking holds from medicine to the humanities.</p>
+      <div class="glass-card chart-card subject-card" data-aos="fade-up"><div id="chart-heatmap"></div></div>
     </div>
   </div>
 </section>
@@ -369,41 +418,47 @@
 <!-- Findings (static/js/charts.js) -->
 <section class="sec" id="findings">
   <div class="container">
+    <div class="screen">
     <div class="eyebrow" data-aos="fade-up">Findings</div>
     <h2 class="sec-title" data-aos="fade-up">What separates agents from people</h2>
-    <p class="sec-lead" data-aos="fade-up">Every step of every run is logged, so each missed moment can be traced back to where it was lost.</p>
+    <p class="sec-lead is-tight" data-aos="fade-up">Every step of every run is logged, so each missed anchor can be traced back to where it was lost.</p>
     <div class="finding" data-aos="fade-up">
       <div class="finding-text">
         <div class="finding-num">01</div>
         <div class="finding-big" id="f1-big"></div>
-        <div class="finding-kicker">of what any backbone keeps lies inside moments people kept</div>
-        <h3>The gap is in discovery, not quality.</h3>
-        <p>Backbones agree on how good the moments they keep are. They differ in how many they find:
-          from <b id="f1-recall"></b> of the reference.</p>
+        <div class="finding-kicker">of the reference anchors appear on screen while the agents browse</div>
+        <h3>Agents reach the evidence people keep.</h3>
+        <p>Yet anchor recall ranges from only <b id="f1-recall"></b>. Most of the gap opens after the agent has
+          already seen the anchor.</p>
       </div>
       <div class="finding-chart" id="chart-scatter"></div>
     </div>
+    </div>
+    <div class="screen">
     <div class="finding is-flipped" data-aos="fade-up">
       <div class="finding-text">
         <div class="finding-num">02</div>
-        <div class="finding-big" id="f2-big"></div>
-        <div class="finding-kicker">of missed moments were never on screen</div>
-        <h3>Agents see the moments they miss.</h3>
-        <p>The losses come afterwards — in deciding what is worth keeping, in verification, or in picking the frame —
-          and where they happen depends on the backbone.</p>
+        <div class="finding-big" id="f2-big">ρ = 0.93</div>
+        <div class="finding-kicker">rank correlation between anchors kept per video and anchor recall</div>
+        <h3>Missed anchors are discarded after observation.</h3>
+        <p>Most are judged not worth keeping by the content evaluator or rejected when the verifier checks the subtitles.
+          Smaller models in the same family reject more captured candidates.</p>
       </div>
       <div class="finding-chart" id="chart-attribution"></div>
     </div>
+    </div>
+    <div class="screen">
     <div class="finding" data-aos="fade-up">
       <div class="finding-text">
         <div class="finding-num">03</div>
         <div class="finding-big" id="f3-big"></div>
-        <div class="finding-kicker">median moment kept by people, against <b id="f3-agents"></b> for agents</div>
-        <h3>Agents cut finer than people.</h3>
-        <p>Where a person keeps one explanation, an agent often keeps several pieces of it — visual change is not the
-          same as a change in what is being taught.</p>
+        <div class="finding-kicker">median anchor kept by people, against <b id="f3-agents"></b> for agents</div>
+        <h3>Agents keep shorter, more fragmented anchors.</h3>
+        <p>Matched anchors still overlap well, with a median tIoU of 0.75 to 0.83, and 5.4% to 17.0% of human anchors are
+          split into several agent anchors.</p>
       </div>
       <div class="finding-chart" id="chart-lengths"></div>
+    </div>
     </div>
   </div>
 </section>
@@ -412,8 +467,8 @@
 <section class="sec" id="gallery">
   <div class="container">
     <div class="eyebrow" data-aos="fade-up">Gallery</div>
-    <h2 class="sec-title" data-aos="fade-up">Kept moments</h2>
-    <p class="sec-lead" data-aos="fade-up">Knowledge moments kept by the agents, each with the verifier's rationale. Click a card to open it.</p>
+    <h2 class="sec-title" data-aos="fade-up">Kept anchors</h2>
+    <p class="sec-lead" data-aos="fade-up">Visual knowledge anchors kept by the agents, each with the verifier's rationale. Click a card to open it.</p>
     <div class="gallery" id="gallery-grid"></div>
   </div>
 </section>
@@ -427,8 +482,8 @@
         <i class="fas fa-copy"></i><span class="copy-text">Copy</span>
       </button>
     </div>
-    <pre id="bibtex-code"><code>@inproceedings{anonymous2027pause,
-  title     = {Pause, Rewind, Keep: Agents That Collect Knowledge Moments from Videos},
+    <pre id="bibtex-code"><code>@inproceedings{anonymous2027leaf,
+  title     = {LEAF: Anchoring Visual Knowledge in Videos as People Do},
   author    = {Anonymous},
   booktitle = {Under review},
   year      = {2027}

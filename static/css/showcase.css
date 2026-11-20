@@ -664,6 +664,10 @@ svg.chart .ref { stroke: rgba(255, 255, 255, 0.35); stroke-dasharray: 4 4; }
 svg.chart .ref-label { fill: var(--muted); font-size: 10.5px; }
 svg.chart .dot { fill: var(--agent); stroke: #0e1422; stroke-width: 2; transition: stroke 0.2s; }
 svg.chart .dot.best { fill: #fde047; }
+svg.chart .dot.seen { fill: var(--human); }
+svg.chart .gap-line { stroke: rgba(255, 255, 255, 0.28); stroke-width: 3; stroke-linecap: round; }
+svg.chart .ar-key { fill: var(--agent); }
+svg.chart .seen-key { fill: var(--human); }
 svg.chart .dot-label { fill: #e2e8f0; font-size: 11.5px; font-weight: 600; }
 svg.chart .dot-g { opacity: 0; transition: opacity 0.6s var(--d); cursor: default; }
 .is-in svg.chart .dot-g { opacity: 1; }
@@ -769,3 +773,111 @@ code { background: transparent !important; color: #cbd5e1 !important; }
 @media (prefers-reduced-motion: reduce) {
   .wall-row, .gradient-text, .hero-title .gradient-text, .donut-glow, .donut-card.is-in .donut-3d, .hero-frame em, .hero-in, .vid-scan, .vid-label em, .vid-bar::after { animation: none; }
 }
+
+/* ---------- LEAF brand ---------- */
+:root {
+  --leaf: linear-gradient(100deg, #4ade80 0%, #2dd4bf 22%, #38bdf8 44%, #818cf8 66%, #c084fc 84%, #4ade80 100%);
+}
+.hero-title { display: flex; flex-direction: column; align-items: center; gap: 0.15em; }
+.brand-row { display: inline-flex; align-items: center; gap: 0.18em; line-height: 0.95; }
+.brand-word {
+  font-size: clamp(4.6rem, 11vw, 8.6rem); font-weight: 900; letter-spacing: -0.055em; line-height: 0.95;
+  background: var(--leaf); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: leaf-flow 9s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 28px rgba(45, 212, 191, 0.35)) drop-shadow(0 0 60px rgba(129, 140, 248, 0.25));
+  position: relative;
+}
+@keyframes leaf-flow { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+.leaf-mark { flex: none; overflow: visible; }
+.leaf-mark.is-hero { width: clamp(4rem, 9vw, 7.2rem); height: auto; filter: drop-shadow(0 0 22px rgba(74, 222, 128, 0.45)); animation: leaf-sway 6s ease-in-out infinite; transform-origin: 16% 84%; }
+@keyframes leaf-sway { 50% { transform: rotate(-5deg) translateY(-3px); } }
+.leaf-mark.is-hero .leaf-rib, .leaf-mark.is-hero .leaf-vein { stroke-dasharray: 80; stroke-dashoffset: 80; animation: leaf-draw 1.6s 0.5s cubic-bezier(0.3, 0.8, 0.3, 1) forwards; }
+.leaf-mark.is-hero .leaf-vein { animation-delay: 1s; }
+@keyframes leaf-draw { to { stroke-dashoffset: 0; } }
+.leaf-mark.is-hero .leaf-anchor { transform-box: fill-box; transform-origin: center; opacity: 0; animation: leaf-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) forwards, leaf-pulse 2.4s 2.4s ease-in-out infinite; filter: drop-shadow(0 0 4px #fb923c); }
+.leaf-mark.is-hero .leaf-anchor:nth-of-type(1) { animation-delay: 1.5s, 2.4s; }
+.leaf-mark.is-hero .leaf-anchor:nth-of-type(2) { animation-delay: 1.75s, 2.8s; }
+.leaf-mark.is-hero .leaf-anchor:nth-of-type(3) { animation-delay: 2s, 3.2s; }
+@keyframes leaf-pop { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+@keyframes leaf-pulse { 50% { transform: scale(1.35); } }
+.hero-title .hero-title-rest { font-size: clamp(1.5rem, 3.3vw, 2.75rem); letter-spacing: -0.03em; line-height: 1.12; max-width: 18em; }
+.brand-acronym {
+  margin-top: 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: clamp(0.72rem, 1.1vw, 0.86rem); letter-spacing: 0.28em;
+  text-transform: uppercase; color: #8b97ab;
+}
+.brand-acronym b { font-weight: 700; font-size: 1.15em; text-shadow: 0 0 12px currentColor; }
+.hero-content { padding-top: 4.5rem; }
+.hero-sub { margin-top: 1.3rem; text-wrap: balance; }
+.leaf-mark.is-small { width: 20px; height: 20px; filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.5)); }
+.brand-word-sm, .brand-ink {
+  background: var(--leaf); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: leaf-flow 9s ease-in-out infinite alternate;
+}
+.brand-word-sm { font-weight: 900; letter-spacing: -0.02em; font-size: 1rem; }
+
+/* ---------- one block per screen (static/js/snap.js stops at each .screen) ---------- */
+.screen { min-height: calc(100vh - 150px); display: flex; flex-direction: column; justify-content: center; }
+.screen + .screen { margin-top: 4rem; }
+.sec-lead.is-tight { margin-bottom: 1.6rem; }
+.screen-title { text-align: center; color: #fff; font-weight: 900; font-size: clamp(1.7rem, 3.4vw, 2.6rem); letter-spacing: -0.035em; line-height: 1.08; margin-bottom: 0.8rem; }
+
+/* Baselines: fifteen lanes on one screen. */
+#viewer .sec-title { font-size: clamp(1.9rem, 3.8vw, 3rem); margin-bottom: 0.6rem; }
+#viewer .video-chips { margin-bottom: 1rem; gap: 0.4rem; }
+#viewer .viewer-card { padding: 1rem 1.6rem 0.9rem; }
+#viewer .viewer-head { margin-bottom: 0.3rem; }
+#viewer .lane { margin: 0.1rem 0; }
+#viewer .lane-name { font-size: 0.82rem; }
+#viewer .lane-score { font-size: 0.85rem; }
+#viewer .legend { margin-top: 0.5rem; }
+.screen-strip { justify-content: center; }
+.strip-head { text-align: center; color: var(--muted); margin-bottom: 1.2rem; font-size: 0.95rem; }
+.strip-head b { color: var(--agent); }
+
+/* Results: anchor recall as grouped columns. */
+.ar-card { padding: 2.2rem 1.6rem 1.4rem; }
+.ar-columns { --hmax: 300px; position: relative; display: flex; justify-content: center; gap: 1.1rem; padding-left: 2.4rem; }
+.ar-grid { position: absolute; left: 0; right: 0; bottom: calc(1.6rem + 2.1rem); height: var(--hmax); pointer-events: none; }
+.ar-grid span { position: absolute; left: 0; right: 0; bottom: calc(100% * var(--v) / 0.85); border-top: 1px dashed rgba(255, 255, 255, 0.07); }
+.ar-grid em { position: absolute; left: 0; top: -0.6rem; font-style: normal; font-size: 0.68rem; color: #5f6b80; font-family: 'JetBrains Mono', monospace; }
+.ar-group { display: flex; flex-direction: column; align-items: center; }
+.ar-cols { display: flex; align-items: flex-end; gap: 0.45rem; height: calc(var(--hmax) + 1.6rem); }
+.ar-col { position: relative; width: 44px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; cursor: default; }
+.ar-bar {
+  width: 100%; height: 0; border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, #c084fc, #818cf8 45%, #38bdf8);
+  box-shadow: 0 0 18px -6px rgba(129, 140, 248, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: height 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d);
+}
+.is-in .ar-bar { height: calc(var(--hmax) * var(--h) / 0.85); }
+.ar-val { font-size: 0.78rem; font-weight: 700; color: #dbe3f0; margin-bottom: 0.35rem; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 0.5s calc(var(--d) + 0.8s); }
+.is-in .ar-val { opacity: 1; }
+.ar-name { position: absolute; bottom: -1.7rem; font-size: 0.7rem; color: #9fb0c6; white-space: nowrap; }
+.ar-col.is-best .ar-bar { background: linear-gradient(180deg, #fde047, #fb923c 55%, #f472b6); box-shadow: 0 0 30px -4px rgba(251, 146, 60, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+.ar-col.is-best .ar-val { color: #fde047; font-size: 0.9rem; }
+.ar-col:hover .ar-bar { filter: brightness(1.2); }
+.ar-family { margin-top: 2.3rem; padding-top: 0.45rem; border-top: 1px solid rgba(255, 255, 255, 0.14); width: 100%; text-align: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: #c4b5fd; white-space: nowrap; }
+
+/* Results: subjects as dot rows. */
+.subject-card { padding: 1.2rem 1.6rem 0.8rem; }
+.fam-legend { justify-content: center; margin-bottom: 0.4rem; }
+svg.chart .range-line { stroke: rgba(255, 255, 255, 0.14); stroke-width: 10; stroke-linecap: round; }
+svg.chart .sdot { stroke: #0b0f19; stroke-width: 1.5; opacity: 0.92; }
+svg.chart .sdot.is-best { stroke: #fff; stroke-width: 2; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6)); }
+
+/* Findings: one finding per screen. */
+#findings .finding { margin-bottom: 0; }
+@media (max-width: 900px) {
+  .ar-columns { gap: 0.5rem; padding-left: 1.6rem; --hmax: 220px; }
+  .ar-col { width: 22px; }
+  .ar-val, .ar-name { font-size: 0.55rem; }
+  .ar-family { font-size: 0.5rem; letter-spacing: 0.02em; }
+}
+
+/* Abstract and the headline numbers share one screen. */
+.abstract-sec .container { max-width: 1120px; }
+.abstract-sec .spec-row { margin: 0 auto 2rem; }
+.abstract-sec .scrub { font-size: clamp(0.98rem, 1.3vw, 1.18rem); line-height: 1.55; }
+
+.vid-box img { display: block; width: 100%; height: auto; }

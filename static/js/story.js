@@ -1,4 +1,4 @@
-// Method section: a scroll-driven walk through one real kept moment (skim, pause, rewind, keep).
+// Method section: a scroll-driven walk through one real kept anchor (skim, pause, rewind, keep).
 // Frames, the moment interval, its subtitles and the verifier's rationale come from data/story.json.
 window.PRK = window.PRK || {};
 window.PRK.story = function (data) {
@@ -128,7 +128,7 @@ window.PRK.story = function (data) {
         : 'scanning from <b>' + fmt(skim[0]) + '</b>');
     } else if (step === 1) {
       place(L); show(frameAt(L));
-      live[1].innerHTML = chip(k > 0.5 ? 'triage: <b>new visual</b> · worth a closer look' : 'comparing <b>2 frames</b>…');
+      live[1].innerHTML = chip(k > 0.5 ? 'content evaluator: <b>new visual</b> · worth a closer look' : 'looking at the <b>new frame</b>…');
     } else if (step === 2) {
       if (k < 0.5) {
         const w = walk(bisect, clamp((k - 0.1) / 0.4));
